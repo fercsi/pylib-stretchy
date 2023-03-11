@@ -85,3 +85,43 @@ right, all other types are arranged to the left.
      .     .     .     .     .
 #        42       False   3.1
 ```
+
+## Examples
+
+### Langton's ant
+
+```python
+array = StretchyND(2, '.')
+pos = (0, 0)
+dir = 2
+for _ in range(11000):
+    if array[pos] == '#':
+        dir = (dir + 1) % 4
+    else:
+        dir = (dir - 1) % 4
+    array[pos] = '.' if array[pos] == '#' else '#'
+    if dir == 0:
+        pos = (pos[0], pos[1] + 1)
+    elif dir == 1:
+        pos = (pos[0] - 1, pos[1])
+    elif dir == 2:
+        pos = (pos[0], pos[1] - 1)
+    elif dir == 3:
+        pos = (pos[0] + 1, pos[1])
+print(f'{array:s}')
+```
+
+## Future plans
+
+There are some ideas for future development:
+
+- **normalization**:  To  delete  those  cells whose  contents  are  the
+  default value, however they are not followed by others.
+- **offset  shifting**: Offset  an existing  array without  changing the
+  contents.
+- **arbitrary croping**: Cut to specified size.
+- **non-zero centric operation**: Do not require storage starting from 0
+  if all elements are in the positive or negative range.
+- **sparse solution**: There  should be no need to  store default items.
+  It could be  possible to create huge arrays if  there are many default
+  elements in there.
