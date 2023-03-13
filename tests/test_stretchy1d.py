@@ -109,6 +109,14 @@ def test_offset(arr, content):
 
 
 @pytest.mark.parametrize('arr, content', TEST_DATA)
+def test_boundaries(arr, content):
+    s = Stretchy1D()
+    s.set(*arr)
+    offset = arr[1] if len(arr) == 2 and arr[1] < 0 else 0
+    assert s.boundaries() == (offset, offset + len(content))
+
+
+@pytest.mark.parametrize('arr, content', TEST_DATA)
 def test_len(arr, content):
     s = Stretchy1D()
     s.set(*arr)

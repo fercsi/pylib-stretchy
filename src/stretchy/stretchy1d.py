@@ -80,6 +80,9 @@ class Stretchy1D:
     def offset(self) -> int:
         return -len(self.neg)
 
+    def boundaries(self) -> tuple[int, int]:
+        return -len(self.neg), len(self.pos)
+
     def __iter__(self) -> itertools.chain:
         return itertools.chain(reversed(self.neg), self.pos)
 
@@ -126,3 +129,24 @@ class Stretchy1D:
             return format[0].join(values)
         raise ValueError(f"Unknown format code '{format}' for object of type 'Stretchy1D'")
 
+    def _format(self, format: str, boundaries: tuple[int, int]) -> str:
+        if format == '':
+            return str(self)
+        mod: Callable = str
+        if format[0] == 'r':
+            mod = repr
+            format = format[1:]
+        if format == '':
+            format = ',s'
+#>        if format == 'a': # arranged in columns
+#>            return self._columns(mod)
+        items = (self.__getitem__(i) for i in range(*boundaries))
+        if mod is str:
+            values = map(str, ('' if value is None else value for value in items))
+        else:
+            values = map(repr, items)
+        if format == 's': # separated
+            return ''.join(values)
+        if len(format) == 2 and format[1] == 's':
+            return format[0].join(values)
+        raise ValueError(f"Unknown format code '{format}' for object of type 'Stretchy1D'")
