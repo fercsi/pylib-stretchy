@@ -3,7 +3,7 @@ import pytest
 from stretchy import Stretchy1D
 
 @pytest.mark.parametrize('default',
-    ( (42,), ('#',), (42.69,), (None,), (False,),)
+    (42, '#', 42.69, None, False)
 )
 def test_default(default):
     s = Stretchy1D(default)
@@ -51,6 +51,47 @@ def test_getitem(default, arr, check):
         assert s[pos] == value
 
 
+SLICE_INPUT = (
+    ((None,), '#########', 'abcdefghi'),
+
+    ((-2,None), 'ab#######', 'cdefghi'),
+    ((0,None), 'abcd#####', 'efghi'),
+    ((2,None), 'abcdef###', 'ghi'),
+    ((-6,None), '###########', '..abcdefghi'),
+    ((6,None), 'abcdefghi', ''),
+
+    ((None,-2), '##cdefghi', 'ab'),
+    ((None,0), '####efghi', 'abcd'),
+    ((None,2), '######ghi', 'abcdef'),
+    ((None,-6), 'abcdefghi', ''),
+    ((None,7), '###########', 'abcdefghi..'),
+
+    ((-2,2), 'ab####ghi', 'cdef'),
+    ((-6,2), '########ghi', '..abcdef'),
+    ((-2,7), 'ab#########', 'cdefghi..'),
+    ((-6,7), '#############', '..abcdefghi..'),
+
+    ((None,None,3), '#bc#ef#hi', 'adg'),
+    ((None,None,-3), 'ab#de#gh#', 'ifc'),
+    ((-6,7,3), '#.a#cd#fg#i.#', '.beh.'),
+    ((6,-7,-3), '#.a#cd#fg#i.#', '.heb.'),
+)
+
+@pytest.mark.parametrize('indices, content, got', SLICE_INPUT)
+def test_setitem_slice(indices, content, got):
+    s = Stretchy1D('.')
+    s.set('abcdefghi', -4)
+    s[slice(*indices)] = '#'
+    assert f'{s:s}' == content
+
+
+@pytest.mark.parametrize('indices, content, got', SLICE_INPUT)
+def test_getitem_slice(indices, content, got):
+    s = Stretchy1D('.')
+    s.set('abcdefghi', -4)
+    assert ''.join(s[slice(*indices)]) == got
+
+
 TEST_DATA = (
     (((7,),), [7]),
     (((7,),2), [None, None, 7]),
@@ -95,7 +136,7 @@ def test_set(params, offset, content):
     s = Stretchy1D('.')
     s.set(*params)
     assert s.offset() == offset
-    assert '{:s}'.format(s) == content
+    assert f'{s:s}' == content
 
 
 @pytest.fixture

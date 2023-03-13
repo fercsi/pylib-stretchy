@@ -2,6 +2,7 @@
 
 import itertools
 from typing import Any, Callable, TypeVar
+from collections.abc import Iterator
 
 T = TypeVar('T')
 
@@ -22,8 +23,14 @@ class Stretchy1D:
             self.neg = list(array[-offset-1::-1])
             self.pos = list(array[-offset:])
 
-    def __setitem__(self, index: int, value: T|None) -> None:
+    def __setitem__(self, index: int|slice, value: T|None) -> None:
         dim: list[int|None] = [None, None]
+        if isinstance(index, slice):
+            range_indices = self._range_indices(index)
+            # Fill with value! (Python collections do not support this)
+            for i in range(*range_indices):
+                self.__setitem__(i, value)
+            return
         if index >= 0:
             if len(self.pos) <= index:
                 self.pos.extend([self.default] * (index - len(self.pos) + 1))
@@ -36,7 +43,11 @@ class Stretchy1D:
                 dim[0] = -len(self.neg)
             self.neg[index] = value
 
-    def __getitem__(self, index: int) -> T|None:
+    def __getitem__(self, index: int|slice) -> T|Iterator|None:
+        if isinstance(index, slice):
+            range_indices = self._range_indices(index)
+            # Return iterator instead of some arbitrary collection
+            return (self.__getitem__(i) for i in range(*range_indices))
         if index >= 0:
             if len(self.pos) <= index:
                 return self.default
@@ -46,6 +57,25 @@ class Stretchy1D:
             if len(self.neg) <= index:
                 return self.default
             return self.neg[index]
+
+    def _range_indices(self, indices: slice) -> tuple[int, int, int]:
+        range_indices: list[int|None] = [indices.start, indices.stop, indices.step]
+        if range_indices[2] is None:
+            range_indices[2] = 1
+        assert isinstance(range_indices[2], int)
+        if range_indices[0] is None:
+            if range_indices[2] > 0:
+                range_indices[0] = -len(self.neg)
+            else:
+                range_indices[0] = len(self.pos) - 1
+        if range_indices[1] is None:
+            if range_indices[2] > 0:
+                range_indices[1] = len(self.pos)
+            else:
+                range_indices[1] = -len(self.neg) - 1
+        assert isinstance(range_indices[0], int)
+        assert isinstance(range_indices[1], int)
+        return (range_indices[0], range_indices[1], range_indices[2])
 
     def offset(self) -> int:
         return -len(self.neg)
