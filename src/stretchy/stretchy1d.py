@@ -23,9 +23,6 @@ class Stretchy1D:
             self.pos = list(array[-offset:])
 
     def __setitem__(self, index: int, value: T|None) -> None:
-        self._setitem(index, value)
-
-    def _setitem(self, index: int, value: T|None) -> tuple[int|None, int|None]:
         dim: list[int|None] = [None, None]
         if index >= 0:
             if len(self.pos) <= index:
@@ -38,7 +35,6 @@ class Stretchy1D:
                 self.neg.extend([self.default] * (index - len(self.neg) + 1))
                 dim[0] = -len(self.neg)
             self.neg[index] = value
-        return tuple(dim)
 
     def __getitem__(self, index: int) -> T|None:
         if index >= 0:
@@ -82,7 +78,6 @@ class Stretchy1D:
     def __format__(self, format: str) -> str:
         if format == '':
             return str(self)
-#>            format = ',s'
         mod = str
         if format[0] == 'r':
             mod = repr
@@ -101,28 +96,3 @@ class Stretchy1D:
             return format[0].join(values)
         raise ValueError(f"Unknown format code '{format}' for object of type 'Stretchy1D'")
 
-#>if __name__ == '__main__':
-#>    s=Stretchy1D('.')
-#>    s[-2] = '#'
-#>    s[2] = '@@@'
-#>    s[0] = 7
-#>    s[-4] = None
-#>    print(len(s))
-#>    print(s.offset())
-#>    print(s[-12345678])
-#>    print(f'{s}')
-#>    print(f'{s!r}')
-#>    print(f'{s!s}')
-#>
-#>    print(f'{s:a}')
-#>
-#>    print(f'{s:s}')
-#>    print(f'{s: s}')
-#>    print(f'{s:,s}')
-#>    print(f'{s:}')
-#>
-#>    print(f'{s:rs}')
-#>    print(f'{s:r s}')
-#>    print(f'{s:r,s}')
-#>    print(f'{s:r}')
-#>    print(f'{s:r,x}')
