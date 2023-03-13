@@ -1,14 +1,14 @@
 #!/usr/bin/python3
 
 import itertools
-from typing import Any, TypeVar
+from typing import Any, Callable, TypeVar
 
 T = TypeVar('T')
 
 class Stretchy1D:
     def __init__(self, default: T|None = None) -> None:
-        self.pos: list[T] = []
-        self.neg: list[T] = []
+        self.pos: list[T|None] = []
+        self.neg: list[T|None] = []
         self.default: T|None = default
 
     def set(self, array: list|tuple, offset: int = 0) -> None:
@@ -62,7 +62,7 @@ class Stretchy1D:
     def __repr__(self) -> str:
         return '|' + ','.join(map(repr, self)) + '|'
 
-    def _columns(self, mod: str) -> None:
+    def _columns(self, mod: Callable) -> str:
         maxwidth = max(len(mod(item)) for item in self)
         repr = ''
         for i,item in enumerate(self):
@@ -78,7 +78,7 @@ class Stretchy1D:
     def __format__(self, format: str) -> str:
         if format == '':
             return str(self)
-        mod = str
+        mod: Callable = str
         if format[0] == 'r':
             mod = repr
             format = format[1:]
