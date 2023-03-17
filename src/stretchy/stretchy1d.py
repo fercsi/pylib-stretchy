@@ -4,7 +4,10 @@ import itertools
 from typing import Any, Callable, TypeVar
 from collections.abc import Iterable, Iterator
 
+from .format import Formatter
+
 T = TypeVar('T')
+Boundaries = tuple[tuple[int, int], ...]
 
 class Stretchy1D:
     def __init__(self,
@@ -16,6 +19,13 @@ class Stretchy1D:
         self.pos: list[T|None] = []
         self.neg: list[T|None] = []
         self.default: T|None = default
+        if content is not None:
+            self.replace_content(content, offset)
+        # Default Formatter() is for 'str'
+        self.reprformatter = Formatter(self.default)
+        self.reprformatter.literal = True
+        self.reprformatter.sep = ', '
+        self.reprformatter.rowend = ','
 
     def replace_content(self, content: Iterable, offset: int = 0) -> None:
         if offset >= 0:
@@ -99,64 +109,43 @@ class Stretchy1D:
     def __len__(self) -> int:
         return len(self.pos) + len(self.neg)
 
+    def __format__(self, format: str) -> str:
+        formatter: Formatter = Formatter()
+        if format:
+            formatter.begin = ''
+            formatter.end = ''
+            formatter.arrange = False
+            formatter.apply_format_string(format)
+        return self._format(formatter)
+
     def __str__(self) -> str:
-        return '|' + ','.join(map(str, self)) + '|'
+        return self._format(Formatter())
 
     def __repr__(self) -> str:
-        return '|' + ','.join(map(repr, self)) + '|'
+        self.reprformatter.reset()
+        repr_string: str = self._format(self.reprformatter)
+        return f'Stretchy1D(default={self.default!r}, ' \
+            f'offset={self.offset()}, content={repr_string})'
 
-    def _columns(self, mod: Callable) -> str:
-        maxwidth = max(len(mod(item)) for item in self)
-        repr = ''
-        for i,item in enumerate(self):
-            repr += ' ' if i else ''
-            if item is None:
-                item = ''
-            if isinstance(item, (int, float)):
-                repr += f'{mod(item): >{maxwidth}}'
-            else:
-                repr += f'{mod(item): <{maxwidth}}'
-        return repr
+    def _maxwidth(self, formatter: Formatter, boundaries: Boundaries) -> None:
+        # This private method assumes, that repr shows all values
+        formatter.update_maxwidth(self)
+        if boundaries[0][0] < -len(self.neg) \
+                or boundaries[0][1] > len(self.pos):
+            formatter.update_maxwidth_default()
 
-    def __format__(self, format: str) -> str:
-        if format == '':
-            return str(self)
-        mod: Callable = str
-        if format[0] == 'r':
-            mod = repr
-            format = format[1:]
-        if format == '':
-            format = ',s'
-        if format == 'a': # arranged in columns
-            return self._columns(mod)
-        if mod is str:
-            values = map(str, ('' if value is None else value for value in self))
-        else:
-            values = map(repr, self)
-        if format == 's': # separated
-            return ''.join(values)
-        if len(format) == 2 and format[1] == 's':
-            return format[0].join(values)
-        raise ValueError(f"Unknown format code '{format}' for object of type 'Stretchy1D'")
+    def _output(self, formatter: Formatter, boundaries: Boundaries, indent: str = '', indices: list[int] = []) -> None:
+        b: tuple[int, int] = self.boundaries()
+        pre: int = b[0] - boundaries[0][0]
+        post: int = boundaries[0][1] - b[1]
+        items: itertools.chain = itertools.chain(
+            itertools.repeat(self.default, pre),
+            self,
+            itertools.repeat(self.default, post),
+        )
+        formatter.output_iter(items)
 
-    def _format(self, format: str, boundaries: tuple[int, int]) -> str:
-        if format == '':
-            return str(self)
-        mod: Callable = str
-        if format[0] == 'r':
-            mod = repr
-            format = format[1:]
-        if format == '':
-            format = ',s'
-#>        if format == 'a': # arranged in columns
-#>            return self._columns(mod)
-        items = (self.__getitem__(i) for i in range(*boundaries))
-        if mod is str:
-            values = map(str, ('' if value is None else value for value in items))
-        else:
-            values = map(repr, items)
-        if format == 's': # separated
-            return ''.join(values)
-        if len(format) == 2 and format[1] == 's':
-            return format[0].join(values)
-        raise ValueError(f"Unknown format code '{format}' for object of type 'Stretchy1D'")
+    def _format(self, formatter: Formatter) -> str:
+        formatter.update_maxwidth(self)
+        formatter.output_iter(self)
+        return formatter.output

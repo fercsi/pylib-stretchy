@@ -150,43 +150,47 @@ def test_iter(arr, content):
 )
 def test_set(params, offset, content):
     s = Stretchy1D('.')
-    s.set(*params)
+    s.replace_content(*params)
     assert s.offset() == offset
     assert f'{s:s}' == content
 
 
 @pytest.fixture
 def array():
-    s = Stretchy1D('.')
-    s.set(('x', None,'.',234,'.',False,6.7), -3)
+    s = Stretchy1D(default='.', offset=-3,
+        content=('x', None,'.',234,'.',False,6.7))
     return s
 
 
 def test_str(array):
-    assert str(array) == '|x,None,.,234,.,False,6.7|'
+    assert str(array) == "[x           .       234 .     False   6.7]"
 
 
 def test_repr(array):
-    assert repr(array) == "|'x',None,'.',234,'.',False,6.7|"
+    assert repr(array) == "Stretchy1D(default='.', offset=-3, " \
+        "content=['x'  , None , '.'  ,   234, '.'  , False,   6.7])"
 
 
 @pytest.mark.parametrize('fmt,result',
     (
-        ('{}', '|x,None,.,234,.,False,6.7|'),
-        ('{:}', "|x,None,.,234,.,False,6.7|"),
-        ('{!s}', "|x,None,.,234,.,False,6.7|"),
-        ('{!r}', "|'x',None,'.',234,'.',False,6.7|"),
+        ('{}', '[x           .       234 .     False   6.7]'),
+        ('{:}', "[x           .       234 .     False   6.7]"),
+        ('{!s}', "[x           .       234 .     False   6.7]"),
+        ('{!r}', "Stretchy1D(default='.', offset=-3, " \
+            "content=['x'  , None , '.'  ,   234, '.'  , False,   6.7])"),
 
         ('{:a}', "x           .       234 .     False   6.7"),
 
         ('{:s}', "x.234.False6.7"),
-        ('{: s}', "x  . 234 . False 6.7"),
-        ('{:,s}', "x,,.,234,.,False,6.7"),
+        ('{:s }', "x  . 234 . False 6.7"),
+        ('{:s,}', "x,,.,234,.,False,6.7"),
 
-        ('{:r}', "'x',None,'.',234,'.',False,6.7"),
-        ('{:rs}', "'x'None'.'234'.'False6.7"),
-        ('{:r s}', "'x' None '.' 234 '.' False 6.7"),
-        ('{:r,s}', "'x',None,'.',234,'.',False,6.7"),
+        ('{:l}', "'x' None '.' 234 '.' False 6.7"),
+        ('{:ls}', "'x'None'.'234'.'False6.7"),
+        ('{:ls }', "'x' None '.' 234 '.' False 6.7"),
+        ('{:ls,}', "'x',None,'.',234,'.',False,6.7"),
+
+        ('{:s,b<e>}', "<x,,.,234,.,False,6.7>"),
     )
 )
 def test_format(fmt, result, array):
