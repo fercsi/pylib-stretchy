@@ -2,26 +2,36 @@
 
 import itertools
 from typing import Any, Callable, TypeVar
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator
 
 T = TypeVar('T')
 
 class Stretchy1D:
-    def __init__(self, default: T|None = None) -> None:
+    def __init__(self,
+            default: T|None = None,
+            *,
+            content: Iterable|None = None,
+            offset: int = 0
+            ) -> None:
         self.pos: list[T|None] = []
         self.neg: list[T|None] = []
         self.default: T|None = default
 
-    def set(self, array: list|tuple, offset: int = 0) -> None:
+    def replace_content(self, content: Iterable, offset: int = 0) -> None:
         if offset >= 0:
             self.neg = []
-            self.pos = [self.default] * offset + list(array)
-        elif -offset > len(array):
-            self.neg = [self.default] * (-offset - len(array)) + list(array[::-1])
-            self.pos = []
-        else:
-            self.neg = list(array[-offset-1::-1])
-            self.pos = list(array[-offset:])
+            self.pos = [self.default] * offset + list(content)
+            return
+        self.neg = [self.default] * -offset
+        self.pos = []
+        it = iter(content)
+        try:
+            for index in range(-offset-1,-1,-1):
+                self.neg[index] = next(it)
+            while True:
+                self.pos.append(next(it))
+        except StopIteration:
+            return
 
     def __setitem__(self, index: int|slice, value: T|None) -> None:
         dim: list[int|None] = [None, None]

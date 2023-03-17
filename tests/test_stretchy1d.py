@@ -15,6 +15,15 @@ def test_default(default):
     assert s[-3] == default
 
 
+def test_replace_content():
+    # Simple prelimunary test; more tests later...
+    s = Stretchy1D('.')
+    s.replace_content('abcde', 2)
+    assert f'{s:s}' == '..abcde'
+    s.replace_content('abcde', -7)
+    assert f'{s:s}' == 'abcde..'
+
+
 @pytest.mark.parametrize('pos, content',
     (
         ((0,), '#'),
@@ -46,7 +55,7 @@ def test_setitem(pos, content):
 )
 def test_getitem(default, arr, check):
     s = Stretchy1D(*default)
-    s.set(*arr)
+    s.replace_content(*arr)
     for pos, value in check.items():
         assert s[pos] == value
 
@@ -79,19 +88,18 @@ SLICE_INPUT = (
 
 @pytest.mark.parametrize('indices, content, got', SLICE_INPUT)
 def test_setitem_slice(indices, content, got):
-    s = Stretchy1D('.')
-    s.set('abcdefghi', -4)
+    s = Stretchy1D(default='.', content='abcdefghi', offset=-4)
     s[slice(*indices)] = '#'
     assert f'{s:s}' == content
 
 
 @pytest.mark.parametrize('indices, content, got', SLICE_INPUT)
 def test_getitem_slice(indices, content, got):
-    s = Stretchy1D('.')
-    s.set('abcdefghi', -4)
+    s = Stretchy1D(default='.', content='abcdefghi', offset=-4)
     assert ''.join(s[slice(*indices)]) == got
 
 
+# Followings test also the `replace_content` method
 TEST_DATA = (
     (((7,),), [7]),
     (((7,),2), [None, None, 7]),
@@ -103,7 +111,7 @@ TEST_DATA = (
 @pytest.mark.parametrize('arr, content', TEST_DATA)
 def test_offset(arr, content):
     s = Stretchy1D()
-    s.set(*arr)
+    s.replace_content(*arr)
     offset = arr[1] if len(arr) == 2 and arr[1] < 0 else 0
     assert s.offset() == offset
 
@@ -111,7 +119,7 @@ def test_offset(arr, content):
 @pytest.mark.parametrize('arr, content', TEST_DATA)
 def test_boundaries(arr, content):
     s = Stretchy1D()
-    s.set(*arr)
+    s.replace_content(*arr)
     offset = arr[1] if len(arr) == 2 and arr[1] < 0 else 0
     assert s.boundaries() == (offset, offset + len(content))
 
@@ -119,14 +127,14 @@ def test_boundaries(arr, content):
 @pytest.mark.parametrize('arr, content', TEST_DATA)
 def test_len(arr, content):
     s = Stretchy1D()
-    s.set(*arr)
+    s.replace_content(*arr)
     assert len(s) == len(content)
 
 
 @pytest.mark.parametrize('arr, content', TEST_DATA)
 def test_iter(arr, content):
     s = Stretchy1D()
-    s.set(*arr)
+    s.replace_content(*arr)
     assert list(s) == content
 
 
