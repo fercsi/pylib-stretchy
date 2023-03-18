@@ -129,7 +129,8 @@ class Stretchy1D:
 
     def _maxwidth(self, formatter: Formatter, boundaries: Boundaries) -> None:
         # This private method assumes, that repr shows all values
-        formatter.update_maxwidth(self)
+        if len(self):
+            formatter.update_maxwidth(self)
         if boundaries[0][0] < -len(self._neg) \
                 or boundaries[0][1] > len(self._pos):
             formatter.update_maxwidth_default()
@@ -146,6 +147,7 @@ class Stretchy1D:
         formatter.output_iter(items)
 
     def _format(self, formatter: Formatter) -> str:
-        formatter.update_maxwidth(self)
+        if len(self):
+            formatter.update_maxwidth(self)
         formatter.output_iter(self)
         return formatter.output

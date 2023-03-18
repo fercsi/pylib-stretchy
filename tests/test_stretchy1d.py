@@ -162,8 +162,18 @@ def array():
     return s
 
 
+def test_str_empty():
+    s = Stretchy1D()
+    assert str(s) == "[]"
+
+
 def test_str(array):
     assert str(array) == "[x           .       234 .     False   6.7]"
+
+
+def test_repr_empty():
+    s = Stretchy1D()
+    assert repr(s) == "Stretchy1D(default=None, offset=0, content=[])"
 
 
 def test_repr(array):
