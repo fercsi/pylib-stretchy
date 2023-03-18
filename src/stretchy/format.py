@@ -94,7 +94,9 @@ class Formatter:
     def output_firstrow(self, indent: str, index: list[int] = []) -> None:
         if not self.index or not index:
             return
-        self._output.write('\nIndex ' + ','.join(map(str,index)) + ':\n')
+        if self.begin:
+            self._output.write('\n')
+        self._output.write('Index ' + ','.join(map(str,index)) + ':\n')
         if self.begin:
             self._output.write(indent)
 
