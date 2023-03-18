@@ -27,6 +27,10 @@ class Stretchy1D:
         self._reprformatter.sep = ', '
         self._reprformatter.rowend = ','
 
+    @property
+    def dim(self) -> int:
+        return 1
+
     def replace_content(self, content: Iterable, offset: int = 0) -> None:
         if offset >= 0:
             self._neg = []
