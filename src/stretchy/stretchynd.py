@@ -41,6 +41,26 @@ class StretchyND:
     def dim(self) -> int:
         return self._dim
 
+    @property
+    def offset(self) -> tuple[int, ...]:
+        return tuple(map(lambda e: e[0], self.boundaries))
+
+    @property
+    def shape(self) -> tuple[int, ...]:
+        return tuple(map(lambda e: e[1] - e[0], self.boundaries))
+
+    @property
+    def boundaries(self) -> Boundaries:
+        if len(self) == 0:
+            return (((0, 0),) * self._dim)
+        all_bounds: Iterator[Boundaries]
+        if self._dim == 2:
+            all_bounds = ((plane.boundaries,) for plane in self)
+        else:
+            all_bounds = (plane.boundaries for plane in self)
+        boundmax: Iterator[tuple[int, int]] = (_minmax(a) for a in zip(*all_bounds))
+        return ((-len(self._neg), len(self._pos)), *boundmax)
+
 
     def replace_content(self, array: tuple|list,
                         offset: tuple[int,...]|list[int]|int = 0) -> None:
@@ -61,24 +81,6 @@ class StretchyND:
                 plane.replace_content(subarray, sub_offset[0])
             else:
                 plane.replace_content(subarray, sub_offset)
-
-    def offset(self) -> tuple[int, ...]:
-        return tuple(map(lambda e: e[0], self.boundaries()))
-
-    def shape(self) -> tuple[int, ...]:
-        return tuple(map(lambda e: e[1] - e[0], self.boundaries()))
-
-    def boundaries(self) -> Boundaries:
-        if len(self) == 0:
-            return (((0, 0),) * self._dim)
-        all_bounds: Iterator[Boundaries]
-        if self._dim == 2:
-            all_bounds = ((plane.boundaries(),) for plane in self)
-        else:
-            all_bounds = (plane.boundaries() for plane in self)
-        boundmax: Iterator[tuple[int, int]] = (_minmax(a) for a in zip(*all_bounds))
-        return ((-len(self._neg), len(self._pos)), *boundmax)
-
 
     def __setitem__(self, index: tuple[int, ...], value: T) -> None:
         if not isinstance(index, tuple) or len(index) != self._dim \
@@ -126,7 +128,7 @@ class StretchyND:
         self._reprformatter.reset()
         repr_string: str = self._format(self._reprformatter)
         return f'StretchyND(dim={self._dim}, default={self._default!r}, ' \
-            f'offset={self.offset()}, content=\n{repr_string})'
+            f'offset={self.offset}, content=\n{repr_string})'
 
 
     def _getplane(self, index: int, create: bool = True) -> Any: # Self|Stretchy1D
@@ -188,7 +190,7 @@ class StretchyND:
 
     def _format(self, formatter: Formatter) -> str:
         formatter.index_format = self.index_format
-        boundaries = self.boundaries()
+        boundaries = self.boundaries
         self._maxwidth(formatter, boundaries)
         self._output(formatter, boundaries)
         return formatter.output

@@ -31,6 +31,15 @@ class Stretchy1D:
     def dim(self) -> int:
         return 1
 
+    @property
+    def offset(self) -> int:
+        return -len(self._neg)
+
+    @property
+    def boundaries(self) -> tuple[int, int]:
+        return -len(self._neg), len(self._pos)
+
+
     def replace_content(self, content: Iterable, offset: int = 0) -> None:
         if offset >= 0:
             self._neg = []
@@ -101,12 +110,6 @@ class Stretchy1D:
         assert isinstance(range_indices[1], int)
         return (range_indices[0], range_indices[1], range_indices[2])
 
-    def offset(self) -> int:
-        return -len(self._neg)
-
-    def boundaries(self) -> tuple[int, int]:
-        return -len(self._neg), len(self._pos)
-
     def __iter__(self) -> itertools.chain:
         return itertools.chain(reversed(self._neg), self._pos)
 
@@ -129,7 +132,7 @@ class Stretchy1D:
         self._reprformatter.reset()
         repr_string: str = self._format(self._reprformatter)
         return f'Stretchy1D(default={self._default!r}, ' \
-            f'offset={self.offset()}, content={repr_string})'
+            f'offset={self.offset}, content={repr_string})'
 
     def _maxwidth(self, formatter: Formatter, boundaries: Boundaries) -> None:
         # This private method assumes, that repr shows all values
@@ -140,7 +143,7 @@ class Stretchy1D:
             formatter.update_maxwidth_default()
 
     def _output(self, formatter: Formatter, boundaries: Boundaries, indent: str = '', indices: list[int] = []) -> None:
-        b: tuple[int, int] = self.boundaries()
+        b: tuple[int, int] = self.boundaries
         pre: int = b[0] - boundaries[0][0]
         post: int = boundaries[0][1] - b[1]
         items: itertools.chain = itertools.chain(

@@ -81,7 +81,7 @@ def test_offset(cells, boundaries, planes):
     s = StretchyND(len(boundaries))
     for cell in cells:
         s[cell] = 1
-    assert s.offset() == tuple(b[0] for b in boundaries)
+    assert s.offset == tuple(b[0] for b in boundaries)
 
 
 @pytest.mark.parametrize('cells, boundaries, planes', INPUT_DATA)
@@ -89,7 +89,7 @@ def test_shape(cells, boundaries, planes):
     s = StretchyND(len(boundaries))
     for cell in cells:
         s[cell] = 1
-    assert s.shape() == tuple(b[1]-b[0] for b in boundaries)
+    assert s.shape == tuple(b[1]-b[0] for b in boundaries)
 
 
 @pytest.mark.parametrize('cells, boundaries, planes', INPUT_DATA)
@@ -97,7 +97,7 @@ def test_boundaries(cells, boundaries, planes):
     s = StretchyND(len(boundaries))
     for cell in cells:
         s[cell] = 1
-    assert s.boundaries() == boundaries
+    assert s.boundaries == boundaries
 
 
 @pytest.mark.parametrize('cells, boundaries, planes', INPUT_DATA)
