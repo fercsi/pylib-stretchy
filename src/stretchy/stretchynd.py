@@ -34,6 +34,7 @@ class StretchyND:
         self._reprformatter.literal = True
         self._reprformatter.sep = ', '
         self._reprformatter.rowend = ','
+        self.index_format = Formatter.index_format
 
 
     @property
@@ -186,6 +187,7 @@ class StretchyND:
         formatter.output_end()
 
     def _format(self, formatter: Formatter) -> str:
+        formatter.index_format = self.index_format
         boundaries = self.boundaries()
         self._maxwidth(formatter, boundaries)
         self._output(formatter, boundaries)

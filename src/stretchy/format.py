@@ -39,6 +39,7 @@ class Formatter:
     index: bool = False
     arrange: bool = True
     _literal: bool = False
+    index_format: str = 'Index {}:'
 
     def __init__(self, default: Any = None) -> None:
         self._default: Any = default
@@ -96,7 +97,8 @@ class Formatter:
             return
         if self.begin:
             self._output.write('\n')
-        self._output.write('Index ' + ','.join(map(str,index)) + ':\n')
+        self._output.write(self.index_format.format(','.join(map(str,index))))
+        self._output.write('\n')
         if self.begin:
             self._output.write(indent)
 
@@ -104,7 +106,8 @@ class Formatter:
         self._output.write(self.rowend + '\n')
         if self.index:
             if index:
-                self._output.write('Index ' + ','.join(map(str,index)) + ':\n')
+                self._output.write(self.index_format.format(','.join(map(str,index))))
+                self._output.write('\n')
         else:
             self._output.write(separator)
         if self.begin:
