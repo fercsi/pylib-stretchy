@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
 import itertools
 from typing import Any, TypeVar
 #>from typing import Self # from v3.11!
@@ -21,7 +21,7 @@ class StretchyND:
             dim: int,
             default: T|None = None,
             *,
-            content: tuple|list|None = None,
+            content: Sequence|None = None,
             offset: tuple[int,...]|list[int]|int = 0
             ) -> None:
         self._pos: list = [] # list[Self|Stretchy1D]
@@ -58,7 +58,7 @@ class StretchyND:
         return ((-len(self._neg), len(self._pos)), *boundmax)
 
 
-    def replace_content(self, array: tuple|list,
+    def replace_content(self, array: Sequence,
                         offset: tuple[int,...]|list[int]|int = 0) -> None:
         self._neg = []
         self._pos = []
