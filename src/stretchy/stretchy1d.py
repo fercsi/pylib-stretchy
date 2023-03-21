@@ -52,6 +52,7 @@ class Stretchy1D:
         except StopIteration:
             return
 
+
     def __setitem__(self, index: int|slice, value: T|None) -> None:
         dim: list[int|None] = [None, None]
         if isinstance(index, slice):
@@ -87,25 +88,6 @@ class Stretchy1D:
                 return self._default
             return self._neg[index]
 
-    def _range_indices(self, indices: slice) -> tuple[int, int, int]:
-        range_indices: list[int|None] = [indices.start, indices.stop, indices.step]
-        if range_indices[2] is None:
-            range_indices[2] = 1
-        assert isinstance(range_indices[2], int)
-        if range_indices[0] is None:
-            if range_indices[2] > 0:
-                range_indices[0] = -len(self._neg)
-            else:
-                range_indices[0] = len(self._pos) - 1
-        if range_indices[1] is None:
-            if range_indices[2] > 0:
-                range_indices[1] = len(self._pos)
-            else:
-                range_indices[1] = -len(self._neg) - 1
-        assert isinstance(range_indices[0], int)
-        assert isinstance(range_indices[1], int)
-        return (range_indices[0], range_indices[1], range_indices[2])
-
     def __iter__(self) -> itertools.chain:
         return itertools.chain(reversed(self._neg), self._pos)
 
@@ -124,6 +106,26 @@ class Stretchy1D:
         repr_string: str = self._format(ReprFormatter(self._default))
         return f'Stretchy1D(default={self._default!r}, ' \
             f'offset={self.offset}, content={repr_string})'
+
+
+    def _range_indices(self, indices: slice) -> tuple[int, int, int]:
+        range_indices: list[int|None] = [indices.start, indices.stop, indices.step]
+        if range_indices[2] is None:
+            range_indices[2] = 1
+        assert isinstance(range_indices[2], int)
+        if range_indices[0] is None:
+            if range_indices[2] > 0:
+                range_indices[0] = -len(self._neg)
+            else:
+                range_indices[0] = len(self._pos) - 1
+        if range_indices[1] is None:
+            if range_indices[2] > 0:
+                range_indices[1] = len(self._pos)
+            else:
+                range_indices[1] = -len(self._neg) - 1
+        assert isinstance(range_indices[0], int)
+        assert isinstance(range_indices[1], int)
+        return (range_indices[0], range_indices[1], range_indices[2])
 
     def _maxwidth(self, formatter: Formatter, boundaries: Boundaries) -> None:
         # This private method assumes, that repr shows all values
