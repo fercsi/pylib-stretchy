@@ -124,8 +124,10 @@ class StretchyND:
 
     def __repr__(self) -> str:
         repr_string: str = self._format(ReprFormatter(self._default))
+        if repr_string != '[]':
+            repr_string = '\n' + repr_string
         return f'StretchyND(dim={self._dim}, default={self._default!r}, ' \
-            f'offset={self.offset}, content=\n{repr_string})'
+            f'offset={self.offset}, content={repr_string})'
 
 
     def _range_indices(self, indices: slice) -> tuple[int, int, int]:
@@ -182,6 +184,7 @@ class StretchyND:
         separator: str = '\n' * (self._dim-2)
         subindent: str = indent + ' '
         dummy: Stretchy1D|StretchyND|None = None
+        formatter.output_begin()
         for index in range(boundaries[0][0], boundaries[0][1]):
             if continued:
                 if self._dim == 3:
@@ -189,7 +192,6 @@ class StretchyND:
                 else:
                     formatter.output_rowsep(separator, subindent)
             else:
-                formatter.output_begin()
                 if self._dim == 3:
                     formatter.output_firstrow(subindent, indices + [index])
             continued = True

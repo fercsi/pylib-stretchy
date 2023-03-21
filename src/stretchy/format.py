@@ -6,9 +6,6 @@ from io import StringIO
 from typing import Any
 
 
-Boundaries = tuple[tuple[int, int], ...]
-
-
 def _valwidth_str(item: Any) -> int:
     return len(str(item)) if item is not None else 0
 

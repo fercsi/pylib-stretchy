@@ -37,7 +37,7 @@ def array(
         assert isinstance(offset, int)
         return Stretchy1D(default=default, content=content, offset=offset)
     else:
-        assert isinstance(content, Sequence)
+        assert isinstance(content, (Sequence, type(None)))
         return StretchyND(dim=dim, default=default, content=content, offset=offset)
 
 
