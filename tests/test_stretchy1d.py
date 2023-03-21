@@ -183,8 +183,8 @@ def test_repr(array):
 
 @pytest.mark.parametrize('fmt,result',
     (
-        ('{}', '[x           .       234 .     False   6.7]'),
-        ('{:}', "[x           .       234 .     False   6.7]"),
+        ('{}', "x  . 234 . False 6.7"),
+        ('{:}', "x  . 234 . False 6.7"),
         ('{!s}', "[x           .       234 .     False   6.7]"),
         ('{!r}', "Stretchy1D(default='.', offset=-3, " \
             "content=['x'  , None , '.'  ,   234, '.'  , False,   6.7])"),

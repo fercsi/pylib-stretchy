@@ -34,10 +34,10 @@ def _valrepr_repr(item: Any, width: int) -> str:
 class Formatter:
     sep: str = ' '
     rowend: str = ''
-    begin: str = '['
-    end: str = ']'
+    begin: str = ''
+    end: str = ''
     index: bool = False
-    arrange: bool = True
+    arrange: bool = False
     _literal: bool = False
     index_format: str = 'Index {}:'
 
@@ -137,9 +137,6 @@ class Formatter:
             elif c == 'a':
                 self.arrange = True
                 current = None
-            elif c == 'n':
-                self.arrange = False
-                current = None
             elif c == 'l':
                 self.literal = True
                 current = None
@@ -153,3 +150,18 @@ class Formatter:
                 self.end += c
             else:
                 raise ValueError(f"Unknown format code '{c}' stretchy object")
+
+
+class StrFormatter (Formatter):
+    begin = '['
+    end = ']'
+    arrange = True
+
+
+class ReprFormatter (Formatter):
+    sep = ', '
+    rowend = ','
+    begin = '['
+    end = ']'
+    arrange = True
+    _literal = True

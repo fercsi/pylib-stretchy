@@ -4,7 +4,7 @@ import itertools
 from typing import Any, Callable, TypeVar
 from collections.abc import Iterable, Iterator
 
-from .format import Formatter
+from .format import *
 
 T = TypeVar('T')
 Boundaries = tuple[tuple[int, int], ...]
@@ -21,11 +21,7 @@ class Stretchy1D:
         self._default: T|None = default
         if content is not None:
             self.replace_content(content, offset)
-        # Default Formatter() is for 'str'
-        self._reprformatter = Formatter(self._default)
-        self._reprformatter.literal = True
-        self._reprformatter.sep = ', '
-        self._reprformatter.rowend = ','
+
 
     @property
     def dim(self) -> int:
@@ -117,20 +113,15 @@ class Stretchy1D:
         return len(self._pos) + len(self._neg)
 
     def __format__(self, format: str) -> str:
-        formatter: Formatter = Formatter()
-        if format:
-            formatter.begin = ''
-            formatter.end = ''
-            formatter.arrange = False
-            formatter.apply_format_string(format)
+        formatter: Formatter = Formatter(self._default)
+        formatter.apply_format_string(format)
         return self._format(formatter)
 
     def __str__(self) -> str:
-        return self._format(Formatter())
+        return self._format(StrFormatter(self._default))
 
     def __repr__(self) -> str:
-        self._reprformatter.reset()
-        repr_string: str = self._format(self._reprformatter)
+        repr_string: str = self._format(ReprFormatter(self._default))
         return f'Stretchy1D(default={self._default!r}, ' \
             f'offset={self.offset}, content={repr_string})'
 
