@@ -88,7 +88,11 @@ class StretchyND:
         else:
             plane[index[1:]] = value
 
-    def __getitem__(self, index: int|tuple[int, ...]) -> Any: # Self|Stretchy1D|T
+    def __getitem__(self, index: int|tuple[int, ...]|slice) -> Any: # Self|Stretchy1D|T
+        if isinstance(index, slice):
+            range_indices = self._range_indices(index)
+            # Return iterator instead of some arbitrary collection
+            return (self._getplane(i) for i in range(*range_indices))
         if isinstance(index, int):
             return self._getplane(index)
         if not isinstance(index, tuple) or len(index) != self._dim \
@@ -123,6 +127,25 @@ class StretchyND:
         return f'StretchyND(dim={self._dim}, default={self._default!r}, ' \
             f'offset={self.offset}, content=\n{repr_string})'
 
+
+    def _range_indices(self, indices: slice) -> tuple[int, int, int]:
+        range_indices: list[int|None] = [indices.start, indices.stop, indices.step]
+        if range_indices[2] is None:
+            range_indices[2] = 1
+        assert isinstance(range_indices[2], int)
+        if range_indices[0] is None:
+            if range_indices[2] > 0:
+                range_indices[0] = -len(self._neg)
+            else:
+                range_indices[0] = len(self._pos) - 1
+        if range_indices[1] is None:
+            if range_indices[2] > 0:
+                range_indices[1] = len(self._pos)
+            else:
+                range_indices[1] = -len(self._neg) - 1
+        assert isinstance(range_indices[0], int)
+        assert isinstance(range_indices[1], int)
+        return (range_indices[0], range_indices[1], range_indices[2])
 
     def _getplane(self, index: int, create: bool = True) -> Any: # Self|Stretchy1D
         if index >= 0:
