@@ -23,7 +23,7 @@ def array(
         content: Sequence|Iterable|None = None,
         *,
         default: Any = None,
-        offset: tuple[int]|list[int]|int = 0,
+        offset: tuple[int, ...]|list[int]|int = 0,
         dim: int|None = None
         ) -> Stretchy1D|StretchyND:
     if dim is None:
