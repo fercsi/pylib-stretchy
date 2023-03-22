@@ -273,7 +273,182 @@ The index text can be changed by setting the `index_format`. The default
 value is `'Index {}:'` and the `{}` will be replaced by the index values
 separated by commas.
 
-## Examples
+## Array operations
+
+TODO
+
+## Formatting
+
+Stretchy arrays come with a set of formatting options:
+
+```python
+f'{array:s;}'
+'{:b|e|s|a}'.format(array)
+...
+```
+
+Grammar of formatting options can be described as:
+
+```
+format: option*
+option: command param?
+command: a..z, A..Z
+param: chars but command
+```
+
+This  meana,  that  options  follow each  other  without  any  separator
+characters.  The  ascii  letters  indicate  which  option  to  set,  the
+characters after them  are their optional parameters.  Letters cannot be
+parameters.
+
+### Formatting options
+
+- **s**: cell  separator. The  character string  after this  option will
+  separate values. Default: `' '`
+- **r**: row  ending. This value  separates rows (i.e. separator  in the
+  second dimension). Default: `''`
+- **b**: beginning of  block. Each dimension is represented  by a single
+  block. Default: `''`
+- **e**: ending of block. Default: `''`
+- **a**: arrange in columns. `int` and `float` vakues are aligned to the
+ right,  others to  the  left. Boolean  value,  no parameters  allowed.
+- Default: False
+- **i**: show indices. If the  boolean value is `True`, the higher-order
+  indices are  displayed between the two-dimensional  blocks. Otherwise,
+  it uses line breaks to indicate  which block follows (1 line: level 3,
+  2 lines: level 4...). No parameters are allowed. Default: False
+- **l**: literal  format. If  the value  is `True`,  the repr  format of
+  the  cell content  is  used.  Note, that  otherwise,  `None` value  is
+  represented by  an empty string.  No parameters are  allowed. Default:
+  False
+
+With examples that build on each other:
+
+```python
+import stretchy
+
+array = stretchy.empty(3)
+array[-1,0,-1] = '#'
+array[-1,0,1] = '@'
+array[-1,1,0] = '%'
+array[0,0,-1] = '$'
+array[0,1,1] = '&'
+print(f'{array}')
+##  @
+# %
+#
+# $
+#   &
+print(f'{array:s,}')
+##,,@
+#,%,
+#
+#$,,
+#,,&
+print(f'{array:s,b|e|}')
+#|||#,,@|
+#  |,%,||
+#
+# ||$,,|
+#  |,,&|||
+print(f'{array:s,r;b|e|}')
+#|||#,,@|;
+#  |,%,||;
+#
+# ||$,,|;
+#  |,,&|||
+print(f'{array:s,r;b|e|a}')
+#|||#, ,@|;
+#  | ,%, ||;
+#
+# ||$, , |;
+#  | , ,&|||
+print(f'{array:s,r;b|e|al}')
+#|||'#' ,None,'@' |;
+#  |None,'%' ,None||;
+#
+# ||'$' ,None,None|;
+#  |None,None,'&' |||
+print(f'{array:s,r;b|e|ali}')
+#Index -1:
+#|||'#' ,None,'@' |;
+#  |None,'%' ,None||;
+#Index 0:
+# ||'$' ,None,None|;
+#  |None,None,'&' |||
+```
+
+### `str()`
+
+Converting  the   array  to  `str`   is  equivalent  to   the  following
+formatting options: `b[e]a`. This also  means, that while `str(array) ==
+f'{array:b[e]a}'`, `print(array)` differs from `print(f`{array}`)`.
+
+So, let us consider the following sniplet:
+
+```python
+import stretchy
+
+array = stretchy.array([[['ab', 'cd'], ['ef', 'gh']], \
+                                  [['ij', 'kl'], ['mn', 'op']]], dim=4)
+print(array)
+print(repr(array))
+```
+
+The output of it is:
+
+```
+[[[[a b]
+   [c d]]
+
+  [[e f]
+   [g h]]]
+
+
+ [[[i j]
+   [k l]]
+
+  [[m n]
+   [o p]]]]
+ ```
+
+### `repr()`
+
+When representing  arrays, other data  in the array are  also displayed,
+e.g:
+
+```
+StretchyND(dim=2, default='.', offset=(0, 0), content=[])
+```
+
+The  `content` part  is  displayed  with the  format  equivalent to  the
+following formatting options: `s, r,b[e]al`.
+
+So the same code as above but with the following printout:
+
+```python
+print(repr(array)) # or print(f'{array!r}')
+```
+
+results in
+
+```
+StretchyND(dim=4, default=None, offset=(0, 0, 0, 0), content=
+[[[['a', 'b'],
+   ['c', 'd']],
+
+  [['e', 'f'],
+   ['g', 'h']]],
+
+
+ [[['i', 'j'],
+   ['k', 'l']],
+
+  [['m', 'n'],
+   ['o', 'p']]]])
+```
+
+## Complex examples
 
 ### Langton's ant
 
