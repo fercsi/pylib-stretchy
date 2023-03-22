@@ -118,6 +118,13 @@ results in a one-dimensional array of characters:
 ['a', 'b', 'c', 'd', 'e', 'f']
 ```
 
+`content`'s  embedded arrays  are  not reused,  so  repeating the  "same
+arrays" does not have any side-effects:
+
+```python
+array = stretchy.array([[['.']*10]*10]*10)
+```
+
 A more complex example:
 
 ```python
@@ -232,7 +239,7 @@ array.boundaries=((-1, 2), (-1, 2))
 StretchyND(dim=2, default=None, offset=(-1, -1), content=
 [[   1,    0,    1],
  [None, None, None],
-  [   1,    0,    1]])
+ [   1,    0,    1]])
 ```
 
 ### `offset` (read only)
@@ -275,7 +282,115 @@ separated by commas.
 
 ## Array operations
 
-TODO
+### Length of array (`len`)
+
+```python
+length: int = len(array)
+```
+
+The function call gives the size  of the highest dimension of the array.
+This is  the length of  the array in  the one-dimensional case,  and the
+number of sub-planes  (or the first element of the  `shape` property) in
+the case of multi-dimensional arrays.
+
+### Getting values or subplanes
+
+```python
+value = array[5,-7,-2]
+subplane = array[3]
+itr: Iterator = array[-10:10:2]
+```
+
+By indexing a stretchy array, you can perform several tasks depending on
+the type of index.
+
+To get the **value** of a cell, use  a tuple in which the values are the
+indices  of all  dimensions.  If  a non-existent  cell  is indexed,  the
+default value of the array is returned.
+
+You can also  get a **subplane** of  the array (indexed by  an `int`) on
+which you can perform further read  or write operations. In this way, we
+also affect the whole array. In  the case of a one-dimensional array, we
+do not get a plane, but directly the value. It is important to note that
+if  you  request  a  plane  that  does  not  yet  exist,  the  plane  is
+automatically created (for the sake of write operations), as well as all
+the planes between the current boundary and the new plane.
+
+If you  use slice as an  index, unlike the traditional  python approach,
+you don't get  a stretchy array, but an **iterator**  to iterate through
+the selected subplanes, or in the one-dimensional case, the cell values.
+The note  mentioned in the previous  point, that new planes  are created
+when indexing beyond the boundariesy, is true also for this case.
+
+In all of  the above cases, it  is true that negative  values and values
+beyond the current boundaries are also valid index values.
+
+### Changing cell values
+
+To write  the contents of  the cells, the cells  must be indexed  in the
+same way as for rrading:
+
+```
+array[5,-7,-2] = 42
+```
+
+For one-dimensional arrays, slice indexing  can also be used, but unlike
+in python  in general, in this  case all selected elements  of the array
+receive the passed value:
+
+```python
+import stretchy
+
+array = stretchy.array('_'*31)
+array[::3] = 'O'
+print(f'{array:s}')
+```
+
+resulting in
+
+```
+O__O__O__O__O__O__O__O__O__O__O
+```
+
+To replace  the entire contents  of the array,  you can use  the array's
+`replace_content` method:
+
+One-dimensional arrays:
+
+```python
+replace_content(self, content: Iterable, offset: int = 0) -> None
+```
+
+Multi-dimensional arrays:
+
+```python
+replace_content(self, array: Sequence,
+                      offset: tuple[int,...]|list[int]|int = 0) -> None
+```
+
+### Iterating over the array
+
+Stretchy  arrays are  iterable.  This  means, that  you  can  use it  as
+follows:
+
+```python
+import stretchy
+
+array = stretchy.array([[0]*5]*5, offset=-3)
+for index, subplane in enumerate(array, array.offset[0]):
+    subplane[0] = index
+print(f'{array:a}')
+```
+
+And the output is:
+
+```
+ 0  0 -2  0  0
+ 0  0 -1  0  0
+ 0  0  0  0  0
+ 0  0  1  0  0
+ 0  0  2  0  0
+```
 
 ## Formatting
 
