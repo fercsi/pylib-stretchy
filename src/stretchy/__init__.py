@@ -3,6 +3,7 @@
 from typing import Any
 from collections.abc import Iterable, Sequence
 
+from .abc import Array
 from .stretchy1d import Stretchy1D
 from .stretchynd import StretchyND
 

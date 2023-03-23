@@ -4,12 +4,13 @@ import itertools
 from typing import Any, Callable, TypeVar
 from collections.abc import Iterable, Iterator
 
+from .abc import Array
 from .format import *
 
 T = TypeVar('T')
 Boundaries = tuple[tuple[int, int], ...]
 
-class Stretchy1D:
+class Stretchy1D(Array):
     def __init__(self,
             default: T|None = None,
             *,

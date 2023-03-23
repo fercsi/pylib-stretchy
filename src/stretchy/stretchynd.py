@@ -5,6 +5,7 @@ import itertools
 from typing import Any, TypeVar
 #>from typing import Self # from v3.11!
 
+from .abc import Array
 from .stretchy1d import Stretchy1D
 from .format import *
 
@@ -16,7 +17,7 @@ def _minmax(arr: tuple[tuple[int, int], ...]) -> tuple[int, int]:
     return min(minarr), max(maxarr)
 
 
-class StretchyND:
+class StretchyND(Array):
     def __init__(self,
             dim: int,
             default: T|None = None,
