@@ -26,10 +26,11 @@ Results in
 #.#.#...#.#.#
 ```
 
-It's also important  to note that array  storage starts at 0,  so if you
-only put a value in cell 2, 0 and 1 will be created anyway. If you place
-an element in  cell -2, then 0 is not created, just -1.  `array[2] = 42`
-and `array[-2] = 42` result in the followings (respectively):
+It's also important  to note that array  storage starts at 0.  So if you
+only put a value in cell 2, cells 0 and 1 will be created anyway. If you
+place an  element in cell -2,  then 0 is  not created, just -1.  In this
+way,  `array[2] =  42` and  `array[-2] =  42` result  in the  followings
+(respectively):
 
 ```
 | -2 |  -1  |   0  |   1  |  2 |
@@ -40,6 +41,10 @@ and `array[-2] = 42` result in the followings (respectively):
 
 This property affects related features  (such as `offset`, `len`, etc.),
 too.
+
+Also  important to  mention,  that one-  and multi-dimensional  stretchy
+arrays' functionality (properties, methods)  are slightly different. For
+more information, see below.
 
 ## `stretchy` functions
 
@@ -52,54 +57,56 @@ def array(
         default: Any = None,
         offset: tuple[int, ...]|list[int]|int = 0,
         dim: int|None = None
-        ) -> Stretchy1D|StretchyND
+        ) -> Array1D|ArrayND
 ```
 
-- `content`: Array-like object (E.g. list, tuple...). In one-dimensional
-  case this can be any iterable object (e.g. `itertools`-generated ones,
-  or a generator), but in multidimensional cases it can be only Sequence
-  of Sequences (e.g. list if lists).
+- `content`:   Array-like   object   (E.g.   `list`,   `tuple`...).   In
+  one-dimensional   case  this   can  be   any  iterable   object  (e.g.
+  `itertools`-generated ones, or a generator), but  in multi-dimensional
+  cases it can be only Sequence of Sequences (e.g. list of lists).
 - `offset`:  lower  boundaries  of  the  array  in  all  dimensions.  In
-  one-dimensional case it muat be an `int`, and in multidimensional ones
-  it is a tuple  of as much values as much the  number of dimensions the
-  arrays has. This  value can be `int` also  in multi-dimensional cases,
-  so that indexing in all dimensions are the same
+  one-dimensional case  it must  be an  `int`, and  in multi-dimensional
+  ones  it  is a  `tuple`  of  as much  values  as  much the  number  of
+  dimensions the arrays  has. The value of `offset` can  be `int` in the
+  multi-dimensional case, in  which case it is equivalent  to having the
+  same offset value in all dimensions.
 - `default`: Default value for non-specified cells. If this parameter is
-  not specifoed, the default value of `default` is `None`
+  not specified, the default value of `default` is `None`
 - `dim`:  Number of  imensions in  the array.  If not  specified and  no
-  `content` is provided the array will be one-dimensional.
+  `content`  is provided  the result  will be  an empty  one-dimensional
+  stretchy array.
 
 This function  can be used to  create stretchy arrays. If  an array-like
-array is  given as the input  (`content`) to the function,  the stretchy
-array is filled with the contents of  the array. In this case the number
+object is  given as the input (`content`) to the function,  the stretchy
+array is filled with the contents of the object. In this case the number
 of  dimensions  is determined  automatically  by  the function,  but  in
-ambiguous cases you can specify it manually.
+ambiguous cases you can specify it manually (using `dim`).
 
 In some cases, the determination of dimensions can be ambiguous. This is
-the case  when the array contains  strings. By default, the  strings are
-kept together  by the  function (except  if the  `content` itself  is an
+the case when the input array  contains strings. By default, the strings
+are kept together  by the function (except if the  `content` itself is a
 `str`), but  if you  want the  string to be  interpreted as  a character
 sequence, specify the appropriate dimension number. So,
 
-```
+```python
 stretchy.array(['abc','def','ghi'])
 ```
 
 is handled as
 
-```
+```python
 ['abc', 'def', 'ghi']
 ```
 
 but
 
-```
+```python
 stretchy.array(['abc','def','ghi'], dim=2)
 ```
 
 is
 
-```
+```python
 [['a', 'b', 'c'],
  ['d', 'e', 'f'],
  ['g', 'h', 'i']]
@@ -108,18 +115,19 @@ is
 If the input `content`  is a string, it will be  split up, because dim=0
 is pointless.
 
-```
+```python
 stretchy.array('abcdef')
 ```
 
 results in a one-dimensional array of characters:
 
-```
+```python
 ['a', 'b', 'c', 'd', 'e', 'f']
 ```
 
 `content`'s  embedded arrays  are  not reused,  so  repeating the  "same
-arrays" does not have any side-effects:
+arrays" does  not have any  side-effects. To define  a three-dimensional
+array with an initial set of 10x10x10 `'.'` values, you can use:
 
 ```python
 array = stretchy.array([[['.']*10]*10]*10)
@@ -136,46 +144,44 @@ steps = ((1,0,'X'), (0,1,'O'), (0,0,'X'), (2,0,'O'), (1,1,'X'), \
 for i,(x,y,c) in enumerate(steps, 1):
   print('Round', i)
   tic_tac_toe[y,x] = c
-  print(f'{tic_tac_toe:sb }')
+  print(f'{tic_tac_toe:b }')
 ```
 
 The output of the program is:
 
 ```
 Round 1
-  _X_
-  ___
-  ___
+  _ X _
+  _ _ _
+  _ _ _
 Round 2
 ...
 Round 7
-  XXO
-  OX_
-  _OX
+  X X O
+  O X _
+  _ O X
 ```
 
 ### `empty`
 
 ```
-def empty(dim: int = 1, *, default: Any = None) -> Stretchy1D|StretchyND
+def empty(dim: int = 1, default: Any = None) -> Array1D|ArrayND
 ```
 
-This function can be used  to create one- and multi-dimensional stretchy
-arrays.  The  functionality  (properties,  methods)  of  one-dimensional
-arrays  is  slightly different  from  multi-dimensional  ones. For  more
-information, see below.
+Although  you can  also  use the  `array` function  to  create an  empty
+stretchy array, this is a lightweight option.
 
 - `dim`: Dimension  of the array.  If not  specified, the array  will be
   one-dimensional.
 - `default`: Default value for non-specified cells. If this parameter is
-  not specifoed, the default value of `default` is `None`
+  not specifoed, the default value of `default` is `None`.
 
 Example:
 
 ```python
 import stretchy
 
-array = stretchy.empty(3, default=0)
+array = stretchy.empty(3, 0)
 array[1,2,0] = 42
 array[1,1,2] = 137
 array[0,2,2] = 69
@@ -208,7 +214,7 @@ Type: `int`
 
 Use the `dim` property to get the dimension number of the array.
 
-### `boundarires` (read only)
+### `boundaries` (read only)
 
 Type:
 
@@ -236,7 +242,7 @@ Results in
 
 ```
 array.boundaries=((-1, 2), (-1, 2))
-StretchyND(dim=2, default=None, offset=(-1, -1), content=
+ArrayND(dim=2, default=None, offset=(-1, -1), content=
 [[   1,    0,    1],
  [None, None, None],
  [   1,    0,    1]])
@@ -249,10 +255,10 @@ Type:
 - One-dimensional arrays: `int`
 - Multi-dimensional arrays: `tuple[int, ...]`
 
-This property  is used  to get the  lower bounds of  the array  See also
-[boundaries](#boundaries).
+This property  is used  to get the  lower bounds of  the array. See also
+[boundaries](#boundaries-read-only).
 
-### `shape`
+### `shape` (read only)
 
 Type (only for multi-dimensional arrays): `tuple[int, ...]`
 
@@ -263,8 +269,8 @@ one-dimensional case, use `len(array)` instead.
 
 In case of `dim >= 3`, two-dimensional planes are separated by different
 number of empty lines, or by showing  the indices of the plane (See also
-[Format](#format)). By default  this latter looks as  follows (5D array,
-`f'{array:s,i}'`):
+[Formatting](#formatting)). By default this  latter looks as follows (5D
+array, `f'{array:s,i}'`):
 
 ```
 ...
@@ -290,37 +296,38 @@ length: int = len(array)
 
 The function call gives the size  of the highest dimension of the array.
 This is  the length of  the array in  the one-dimensional case,  and the
-number of sub-planes  (or the first element of the  `shape` property) in
+number of sub-planes (alse the first element of the `shape` property) in
 the case of multi-dimensional arrays.
 
 ### Getting values or subplanes
 
-```python
-value = array[5,-7,-2]
-subplane = array[3]
-itr: Iterator = array[-10:10:2]
-```
-
 By indexing a stretchy array, you can perform several tasks depending on
 the type of index.
 
-To get the **value** of a cell, use  a tuple in which the values are the
-indices  of all  dimensions.  If  a non-existent  cell  is indexed,  the
+```python
+value: Any = array[5,-7,-2]
+subplane: stretchy.Array = array[3]
+itr: Iterator = array[-10:10:2]
+```
+
+To get the  **value** of a cell,  use a `tuple` in which  the values are
+the indices  of all dimensions. If  a non-existent cell is  indexed, the
 default value of the array is returned.
 
 You can also  get a **subplane** of  the array (indexed by  an `int`) on
 which you can perform further read  or write operations. In this way, we
 also affect the whole array. In  the case of a one-dimensional array, we
-do not get a plane, but directly the value. It is important to note that
-if  you  request  a  plane  that  does  not  yet  exist,  the  plane  is
-automatically created (for the sake of write operations), as well as all
-the planes between the current boundary and the new plane.
+do not get a plane, but directly  the value of the addressed cell. It is
+important to note that  if you request a plane that  does not yet exist,
+the plane is  automatically created (for the sake  of write operations),
+as  well as  all the  planes between  the current  boundary and  the new
+plane.
 
-If you  use slice as an  index, unlike the traditional  python approach,
+If you use `slice` as an  index, unlike the traditional python approach,
 you don't get  a stretchy array, but an **iterator**  to iterate through
 the selected subplanes, or in the one-dimensional case, the cell values.
 The note  mentioned in the previous  point, that new planes  are created
-when indexing beyond the boundariesy, is true also for this case.
+when indexing beyond the boundaries, is true also for this case.
 
 In all of  the above cases, it  is true that negative  values and values
 beyond the current boundaries are also valid index values.
@@ -330,12 +337,12 @@ beyond the current boundaries are also valid index values.
 To write  the contents of  the cells, the cells  must be indexed  in the
 same way as for rrading:
 
-```
+```python
 array[5,-7,-2] = 42
 ```
 
 For one-dimensional arrays, slice indexing  can also be used, but unlike
-in python  in general, in this  case all selected elements  of the array
+it usually is in python, in this case all selected elements of the array
 receive the passed value:
 
 ```python
@@ -346,7 +353,7 @@ array[::3] = 'O'
 print(f'{array:s}')
 ```
 
-resulting in
+results in
 
 ```
 O__O__O__O__O__O__O__O__O__O__O
@@ -376,7 +383,7 @@ follows:
 ```python
 import stretchy
 
-array = stretchy.array([[0]*5]*5, offset=-3)
+array = stretchy.array([[0]*5]*5, offset=-2)
 for index, subplane in enumerate(array, array.offset[0]):
     subplane[0] = index
 print(f'{array:a}')
@@ -397,45 +404,46 @@ And the output is:
 Stretchy arrays come with a set of formatting options:
 
 ```python
-f'{array:s;}'
-'{:b|e|s|a}'.format(array)
+s1 = f'{array:s;}'
+s2 = '{:b|e|s|a}'.format(array)
 ...
 ```
 
 Grammar of formatting options can be described as:
 
 ```
-format: option*
-option: command param?
-command: a..z, A..Z
-param: chars but command
+Format  ← Option*
+Option  ← Command Param?
+Command ← [a-zA-Z]
+Param   ← (Char & !Command)+
+Char    ← any single unicode character
 ```
 
-This  meana,  that  options  follow each  other  without  any  separator
+This  means,  that  options  follow each  other  without  any  separator
 characters.  The  ascii  letters  indicate  which  option  to  set,  the
 characters after them  are their optional parameters.  Letters cannot be
 parameters.
 
 ### Formatting options
 
-- **s**: cell  separator. The  character string  after this  option will
-  separate values. Default: `' '`
-- **r**: row  ending. This value  separates rows (i.e. separator  in the
-  second dimension). Default: `''`
-- **b**: beginning of  block. Each dimension is represented  by a single
+- `s`: cell  separator. The  character string  after this  option will
+  separate values in a row. Default: `' '`
+- `r`: row  ending. This value  separates rows (i.e. separator  in the
+  second or higher dimensions). Default: `''`
+- `b`: beginning of  block. Each dimension is represented  by a single
   block. Default: `''`
-- **e**: ending of block. Default: `''`
-- **a**: arrange in columns. `int` and `float` vakues are aligned to the
- right,  others to  the  left. Boolean  value,  no parameters  allowed.
-- Default: False
-- **i**: show indices. If the  boolean value is `True`, the higher-order
-  indices are  displayed between the two-dimensional  blocks. Otherwise,
-  it uses line breaks to indicate  which block follows (1 line: level 3,
-  2 lines: level 4...). No parameters are allowed. Default: False
-- **l**: literal  format. If  the value  is `True`,  the repr  format of
+- `e`: ending of block. Default: `''`
+- `a`: arrange in  columns. `int` and `float` values are  aligned to the
+  right, others to the left. `a` turns on arrangement, no parameters are
+  allowed.
+- `i`:  show indices.  If this  option  is turned  on, the  higher-order
+  indices  (>2)  are  displayed   between  the  two-dimensional  blocks.
+  Otherwise,  it uses  line breaks  to indicate  which block  follows (1
+  empty line:  level 3, 2  empty lines:  level 4...). No  parameters are
+  allowed.
+- `l`: literal format.  If this option is turned on,  the repr format of
   the  cell content  is  used.  Note, that  otherwise,  `None` value  is
-  represented by  an empty string.  No parameters are  allowed. Default:
-  False
+  represented by an empty string. No parameters are allowed.
 
 With examples that build on each other:
 
@@ -497,7 +505,7 @@ print(f'{array:s,r;b|e|ali}')
 
 Converting  the   array  to  `str`   is  equivalent  to   the  following
 formatting options: `b[e]a`. This also  means, that while `str(array) ==
-f'{array:b[e]a}'`, `print(array)` differs from `print(f`{array}`)`.
+f'{array:b[e]a}'`, `print(array)` differs from `print(f'{array}')`.
 
 So, let us consider the following sniplet:
 
@@ -529,11 +537,12 @@ The output of it is:
 
 ### `repr()`
 
+You can  use this function  to print  more information about  the array.
 When representing  arrays, other data  in the array are  also displayed,
 e.g:
 
 ```
-StretchyND(dim=2, default='.', offset=(0, 0), content=[])
+ArrayND(dim=2, default='.', offset=(0, 0), content=[])
 ```
 
 The  `content` part  is  displayed  with the  format  equivalent to  the
@@ -548,7 +557,7 @@ print(repr(array)) # or print(f'{array!r}')
 results in
 
 ```
-StretchyND(dim=4, default=None, offset=(0, 0, 0, 0), content=
+ArrayND(dim=4, default=None, offset=(0, 0, 0, 0), content=
 [[[['a', 'b'],
    ['c', 'd']],
 
@@ -570,7 +579,7 @@ StretchyND(dim=4, default=None, offset=(0, 0, 0, 0), content=
 ```python
 import stretchy
 
-array = stretchy.empty(2, default='.')
+array = stretchy.empty(2, '.')
 pos = (0, 0)
 dir = 2
 for _ in range(11000):
@@ -594,19 +603,16 @@ print(f'{array:s}')
 
 There are some ideas for future development:
 
-- **ellipsis**: in case of large arrays, represent values with ellipsis
+- **arbitrary  croping**:  Cut  to specified  size,  increase/shrink  by
+  amount (`int`) or reshape to boundaries
+- **normalization**:  Cut off  the default values  at the  boundaries to
+  prevent unnecessary storage
+- **offset  shifting**: Offset  an existing  array without  changing the
+  contents. Also, offset to center.
+- **non-zero centric operation**: Do not require storage starting from 0
+  if all elements are in the positive or negative range.
 - **sub-sub-planes**:  with  partial indexing  you  can  get plane  from
   any  levels. E.g.  in a  4-dimensional array,  `array[2,5]` returns  a
   2-dimensional one
-- **normalization**:  To  delete  those  cells whose  contents  are  the
-  default value, however they are not followed by others.
-- **offset  shifting**: Offset  an existing  array without  changing the
-  contents.
-- **arbitrary  croping**:  Cut  to specified  size,  increase/shrink  by
-  value(`int`), reshape to boundaries, cut defaults, etc.
-- **non-zero centric operation**: Do not require storage starting from 0
-  if all elements are in the positive or negative range.
 - **comparison operators**
-- **sparse solution**: There  should be no need to  store default items.
-  It could be  possible to create huge arrays if  there are many default
-  elements in there.
+- **ellipsis**: in case of large arrays, represent values with ellipsis (`str` or `repr`)
