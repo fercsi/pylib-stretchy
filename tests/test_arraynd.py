@@ -1,12 +1,12 @@
 import pytest
 
-from stretchy import StretchyND
+from stretchy import ArrayND
 
 @pytest.mark.parametrize('default',
     (42, '#', 42.69, None, False)
 )
 def test_default(default):
-    s = StretchyND(3, default)
+    s = ArrayND(3, default)
     assert s[2,2,2] == default
     assert s[-2,-2,-2] == default
 
@@ -23,7 +23,7 @@ def view(offset, *planes):
 
 def test_replace_content():
     # Simple prelimunary test; more tests later...
-    s = StretchyND(3, '.')
+    s = ArrayND(3, '.')
     s.replace_content([['ab','cd'],['ef','gh']], (1,2,3))
     exp = view( 0,
         [*['.'*5]*4],
@@ -78,7 +78,7 @@ INPUT_DATA = (
 
 @pytest.mark.parametrize('cells, boundaries, planes', INPUT_DATA)
 def test_offset(cells, boundaries, planes):
-    s = StretchyND(len(boundaries))
+    s = ArrayND(len(boundaries))
     for cell in cells:
         s[cell] = 1
     assert s.offset == tuple(b[0] for b in boundaries)
@@ -86,7 +86,7 @@ def test_offset(cells, boundaries, planes):
 
 @pytest.mark.parametrize('cells, boundaries, planes', INPUT_DATA)
 def test_shape(cells, boundaries, planes):
-    s = StretchyND(len(boundaries))
+    s = ArrayND(len(boundaries))
     for cell in cells:
         s[cell] = 1
     assert s.shape == tuple(b[1]-b[0] for b in boundaries)
@@ -94,7 +94,7 @@ def test_shape(cells, boundaries, planes):
 
 @pytest.mark.parametrize('cells, boundaries, planes', INPUT_DATA)
 def test_boundaries(cells, boundaries, planes):
-    s = StretchyND(len(boundaries))
+    s = ArrayND(len(boundaries))
     for cell in cells:
         s[cell] = 1
     assert s.boundaries == boundaries
@@ -102,7 +102,7 @@ def test_boundaries(cells, boundaries, planes):
 
 @pytest.mark.parametrize('cells, boundaries, planes', INPUT_DATA)
 def test_len(cells, boundaries, planes):
-    s = StretchyND(len(boundaries), '.')
+    s = ArrayND(len(boundaries), '.')
     for cell in cells:
         s[cell] = '#'
     assert len(s) == len(planes)
@@ -110,7 +110,7 @@ def test_len(cells, boundaries, planes):
 
 @pytest.mark.parametrize('cells, boundaries, planes', INPUT_DATA)
 def test_iter(cells, boundaries, planes):
-    s = StretchyND(len(boundaries), '.')
+    s = ArrayND(len(boundaries), '.')
     for cell in cells:
         s[cell] = '#'
     assert tuple(f'{sub:s}' for sub in s) == planes
@@ -118,7 +118,7 @@ def test_iter(cells, boundaries, planes):
 
 @pytest.fixture
 def array():
-    s = StretchyND(dim=3, default='.', offset=-1, content=
+    s = ArrayND(dim=3, default='.', offset=-1, content=
         ((('x', None),
           ('.', 234)),
          (('.', False),

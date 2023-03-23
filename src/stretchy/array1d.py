@@ -10,7 +10,7 @@ from .format import *
 T = TypeVar('T')
 Boundaries = tuple[tuple[int, int], ...]
 
-class Stretchy1D(Array):
+class Array1D(Array):
     def __init__(self,
             default: T|None = None,
             *,
@@ -105,7 +105,7 @@ class Stretchy1D(Array):
 
     def __repr__(self) -> str:
         repr_string: str = self._format(ReprFormatter(self._default))
-        return f'Stretchy1D(default={self._default!r}, ' \
+        return f'Array1D(default={self._default!r}, ' \
             f'offset={self.offset}, content={repr_string})'
 
 

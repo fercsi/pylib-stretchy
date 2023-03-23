@@ -1,12 +1,12 @@
 import pytest
 
-from stretchy import Stretchy1D
+from stretchy import Array1D
 
 @pytest.mark.parametrize('default',
     (42, '#', 42.69, None, False)
 )
 def test_default(default):
-    s = Stretchy1D(default)
+    s = Array1D(default)
     assert s[2] == default
     assert s[-2] == default
     s[5] = ...
@@ -17,7 +17,7 @@ def test_default(default):
 
 def test_replace_content():
     # Simple prelimunary test; more tests later...
-    s = Stretchy1D('.')
+    s = Array1D('.')
     s.replace_content('abcde', 2)
     assert f'{s:s}' == '..abcde'
     s.replace_content('abcde', -7)
@@ -38,7 +38,7 @@ def test_replace_content():
     )
 )
 def test_setitem(pos, content):
-    s = Stretchy1D('.')
+    s = Array1D('.')
     for p in pos:
         s[p] = '#'
     assert f'{s:s}' == content
@@ -54,7 +54,7 @@ def test_setitem(pos, content):
     )
 )
 def test_getitem(default, arr, check):
-    s = Stretchy1D(*default)
+    s = Array1D(*default)
     s.replace_content(*arr)
     for pos, value in check.items():
         assert s[pos] == value
@@ -88,14 +88,14 @@ SLICE_INPUT = (
 
 @pytest.mark.parametrize('indices, content, got', SLICE_INPUT)
 def test_setitem_slice(indices, content, got):
-    s = Stretchy1D(default='.', content='abcdefghi', offset=-4)
+    s = Array1D(default='.', content='abcdefghi', offset=-4)
     s[slice(*indices)] = '#'
     assert f'{s:s}' == content
 
 
 @pytest.mark.parametrize('indices, content, got', SLICE_INPUT)
 def test_getitem_slice(indices, content, got):
-    s = Stretchy1D(default='.', content='abcdefghi', offset=-4)
+    s = Array1D(default='.', content='abcdefghi', offset=-4)
     assert ''.join(s[slice(*indices)]) == got
 
 
@@ -110,7 +110,7 @@ TEST_DATA = (
 
 @pytest.mark.parametrize('arr, content', TEST_DATA)
 def test_offset(arr, content):
-    s = Stretchy1D()
+    s = Array1D()
     s.replace_content(*arr)
     offset = arr[1] if len(arr) == 2 and arr[1] < 0 else 0
     assert s.offset == offset
@@ -118,7 +118,7 @@ def test_offset(arr, content):
 
 @pytest.mark.parametrize('arr, content', TEST_DATA)
 def test_boundaries(arr, content):
-    s = Stretchy1D()
+    s = Array1D()
     s.replace_content(*arr)
     offset = arr[1] if len(arr) == 2 and arr[1] < 0 else 0
     assert s.boundaries == (offset, offset + len(content))
@@ -126,14 +126,14 @@ def test_boundaries(arr, content):
 
 @pytest.mark.parametrize('arr, content', TEST_DATA)
 def test_len(arr, content):
-    s = Stretchy1D()
+    s = Array1D()
     s.replace_content(*arr)
     assert len(s) == len(content)
 
 
 @pytest.mark.parametrize('arr, content', TEST_DATA)
 def test_iter(arr, content):
-    s = Stretchy1D()
+    s = Array1D()
     s.replace_content(*arr)
     assert list(s) == content
 
@@ -149,7 +149,7 @@ def test_iter(arr, content):
     )
 )
 def test_set(params, offset, content):
-    s = Stretchy1D('.')
+    s = Array1D('.')
     s.replace_content(*params)
     assert s.offset == offset
     assert f'{s:s}' == content
@@ -157,13 +157,13 @@ def test_set(params, offset, content):
 
 @pytest.fixture
 def array():
-    s = Stretchy1D(default='.', offset=-3,
+    s = Array1D(default='.', offset=-3,
         content=('x', None,'.',234,'.',False,6.7))
     return s
 
 
 def test_str_empty():
-    s = Stretchy1D()
+    s = Array1D()
     assert str(s) == "[]"
 
 
@@ -172,12 +172,12 @@ def test_str(array):
 
 
 def test_repr_empty():
-    s = Stretchy1D()
-    assert repr(s) == "Stretchy1D(default=None, offset=0, content=[])"
+    s = Array1D()
+    assert repr(s) == "Array1D(default=None, offset=0, content=[])"
 
 
 def test_repr(array):
-    assert repr(array) == "Stretchy1D(default='.', offset=-3, " \
+    assert repr(array) == "Array1D(default='.', offset=-3, " \
         "content=['x'  , None , '.'  ,   234, '.'  , False,   6.7])"
 
 
@@ -186,7 +186,7 @@ def test_repr(array):
         ('{}', "x  . 234 . False 6.7"),
         ('{:}', "x  . 234 . False 6.7"),
         ('{!s}', "[x           .       234 .     False   6.7]"),
-        ('{!r}', "Stretchy1D(default='.', offset=-3, " \
+        ('{!r}', "Array1D(default='.', offset=-3, " \
             "content=['x'  , None , '.'  ,   234, '.'  , False,   6.7])"),
 
         ('{:a}', "x           .       234 .     False   6.7"),

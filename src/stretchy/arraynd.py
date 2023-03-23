@@ -6,7 +6,7 @@ from typing import Any, TypeVar
 #>from typing import Self # from v3.11!
 
 from .abc import Array
-from .stretchy1d import Stretchy1D
+from .array1d import Array1D
 from .format import *
 
 T = TypeVar('T')
@@ -17,7 +17,7 @@ def _minmax(arr: tuple[tuple[int, int], ...]) -> tuple[int, int]:
     return min(minarr), max(maxarr)
 
 
-class StretchyND(Array):
+class ArrayND(Array):
     def __init__(self,
             dim: int,
             default: T|None = None,
@@ -25,8 +25,8 @@ class StretchyND(Array):
             content: Sequence|None = None,
             offset: tuple[int,...]|list[int]|int = 0
             ) -> None:
-        self._pos: list = [] # list[Self|Stretchy1D]
-        self._neg: list = [] # list[Self|Stretchy1D]
+        self._pos: list = [] # list[Self|Array1D]
+        self._neg: list = [] # list[Self|Array1D]
         self._dim: int = dim
         self._default: Any = default
         if content is not None:
@@ -73,7 +73,7 @@ class StretchyND(Array):
             if len(offset) > 1:
                 sub_offset = offset[1:]
         for index, subarray in enumerate(array, current_offset):
-            plane = self._getplane(index) # Self|Stretchy1D
+            plane = self._getplane(index) # Self|Array1D
             if self._dim == 2:
                 plane.replace_content(subarray, sub_offset[0])
             else:
@@ -83,13 +83,13 @@ class StretchyND(Array):
         if not isinstance(index, tuple) or len(index) != self._dim \
                 or any(map(lambda x: not isinstance(x, int), index)):
             raise TypeError('Index must be a {self._dim} element tuple of integers')
-        plane = self._getplane(index[0]) # Self|Stretchy1D
+        plane = self._getplane(index[0]) # Self|Array1D
         if self._dim == 2:
             plane[index[1]] = value
         else:
             plane[index[1:]] = value
 
-    def __getitem__(self, index: int|tuple[int, ...]|slice) -> Any: # Self|Stretchy1D|T
+    def __getitem__(self, index: int|tuple[int, ...]|slice) -> Any: # Self|Array1D|T
         if isinstance(index, slice):
             range_indices = self._range_indices(index)
             # Return iterator instead of some arbitrary collection
@@ -127,7 +127,7 @@ class StretchyND(Array):
         repr_string: str = self._format(ReprFormatter(self._default))
         if repr_string != '[]':
             repr_string = '\n' + repr_string
-        return f'StretchyND(dim={self._dim}, default={self._default!r}, ' \
+        return f'ArrayND(dim={self._dim}, default={self._default!r}, ' \
             f'offset={self.offset}, content={repr_string})'
 
 
@@ -150,7 +150,7 @@ class StretchyND(Array):
         assert isinstance(range_indices[1], int)
         return (range_indices[0], range_indices[1], range_indices[2])
 
-    def _getplane(self, index: int, create: bool = True) -> Any: # Self|Stretchy1D
+    def _getplane(self, index: int, create: bool = True) -> Any: # Self|Array1D
         if index >= 0:
             part = self._pos
         else:
@@ -161,12 +161,12 @@ class StretchyND(Array):
                 return None
             if self._dim == 2:
                 part.extend([
-                    Stretchy1D(default=self._default)
+                    Array1D(default=self._default)
                         for _ in range(index - len(part) + 1)
                 ])
             else:
                 part.extend([
-                    StretchyND(dim=self._dim - 1, default=self._default)
+                    ArrayND(dim=self._dim - 1, default=self._default)
                         for _ in range(index - len(part) + 1)
                 ])
         return part[index]
@@ -184,7 +184,7 @@ class StretchyND(Array):
         continued: bool = False
         separator: str = '\n' * (self._dim-2)
         subindent: str = indent + ' '
-        dummy: Stretchy1D|StretchyND|None = None
+        dummy: Array1D|ArrayND|None = None
         formatter.output_begin()
         for index in range(boundaries[0][0], boundaries[0][1]):
             if continued:
@@ -200,9 +200,9 @@ class StretchyND(Array):
             if plane is None:
                 if dummy is None: # lazy evaluation if needed
                     if self._dim == 2:
-                        dummy = Stretchy1D(self._default)
+                        dummy = Array1D(self._default)
                     else:
-                        dummy = StretchyND(self._dim - 1, self._default)
+                        dummy = ArrayND(self._dim - 1, self._default)
                 plane = dummy
             plane._output(formatter, boundaries[1:], subindent, indices + [index])
         formatter.output_end()

@@ -4,8 +4,8 @@ from typing import Any
 from collections.abc import Iterable, Sequence
 
 from .abc import Array
-from .stretchy1d import Stretchy1D
-from .stretchynd import StretchyND
+from .array1d import Array1D
+from .arraynd import ArrayND
 
 
 def _array_dim(content: Sequence, dim: int = 1) -> int:
@@ -26,7 +26,7 @@ def array(
         default: Any = None,
         offset: tuple[int, ...]|list[int]|int = 0,
         dim: int|None = None
-        ) -> Stretchy1D|StretchyND:
+        ) -> Array1D|ArrayND:
     if dim is None:
         if not content or not isinstance(content, Sequence) \
                 or isinstance(content, str):
@@ -36,14 +36,14 @@ def array(
     assert dim > 0
     if dim == 1:
         assert isinstance(offset, int)
-        return Stretchy1D(default=default, content=content, offset=offset)
+        return Array1D(default=default, content=content, offset=offset)
     else:
         assert isinstance(content, (Sequence, type(None)))
-        return StretchyND(dim=dim, default=default, content=content, offset=offset)
+        return ArrayND(dim=dim, default=default, content=content, offset=offset)
 
 
-def empty(dim: int = 1, default: Any = None) -> Stretchy1D|StretchyND:
+def empty(dim: int = 1, default: Any = None) -> Array1D|ArrayND:
     if dim == 1:
-        return Stretchy1D(default)
+        return Array1D(default)
     else:
-        return StretchyND(dim, default)
+        return ArrayND(dim, default)
