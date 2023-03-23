@@ -41,7 +41,7 @@ def array(
         return StretchyND(dim=dim, default=default, content=content, offset=offset)
 
 
-def empty(dim: int = 1, *, default: Any = None) -> Stretchy1D|StretchyND:
+def empty(dim: int = 1, default: Any = None) -> Stretchy1D|StretchyND:
     if dim == 1:
         return Stretchy1D(default)
     else:
