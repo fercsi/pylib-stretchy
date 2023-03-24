@@ -16,13 +16,13 @@ def _valwidth_repr(item: Any) -> int:
 def _valrepr_str(item: Any, width: int) -> str:
     if item is None:
         return ' ' * width
-    if isinstance(item, (int, float)):
+    if isinstance(item, (int, float)) and not isinstance(item, bool):
         return f'{item!s: >{width}}'
     else:
         return f'{item!s: <{width}}'
 
 def _valrepr_repr(item: Any, width: int) -> str:
-    if isinstance(item, (int, float)):
+    if isinstance(item, (int, float)) and not isinstance(item, bool):
         return f'{item!r: >{width}}'
     else:
         return f'{item!r: <{width}}'
