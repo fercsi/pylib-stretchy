@@ -18,6 +18,8 @@ def _minmax(arr: tuple[tuple[int, int], ...]) -> tuple[int, int]:
 
 
 class ArrayND(Array):
+    index_format: str|None
+
     def __init__(self,
             dim: int,
             default: T|None = None,
