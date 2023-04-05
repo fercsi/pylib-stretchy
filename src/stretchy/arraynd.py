@@ -60,6 +60,10 @@ class ArrayND(Array):
         boundmax: Iterator[tuple[int, int]] = (_minmax(a) for a in zip(*all_bounds))
         return ((-len(self._neg), len(self._pos)), *boundmax)
 
+    @property
+    def is_empty(self) -> bool:
+        return not (self._neg or self._pos)
+
 
     def replace_content(self, array: Sequence,
                         offset: tuple[int,...]|list[int]|int = 0) -> None:

@@ -36,6 +36,10 @@ class Array1D(Array):
     def boundaries(self) -> tuple[int, int]:
         return -len(self._neg), len(self._pos)
 
+    @property
+    def is_empty(self) -> bool:
+        return not (self._neg or self._pos)
+
 
     def replace_content(self, content: Iterable, offset: int = 0) -> None:
         if offset >= 0:
