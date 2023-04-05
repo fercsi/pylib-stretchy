@@ -57,6 +57,31 @@ class Array1D(Array):
         except StopIteration:
             return
 
+    def trim(self) -> None:
+        while self._pos and self._pos[-1] == self._default:
+            self._pos.pop()
+        while self._neg and self._neg[-1] == self._default:
+            self._neg.pop()
+
+    def shrink_by(self, by: int) -> None:
+        bound: int = len(self._neg) - curby
+        if bound < 0:
+            bound = 0
+        del self._neg[bound:]
+        bound = len(self._pos) - curby
+        if bound < 0:
+            bound = 0
+        del self._posneg[bound:]
+
+    def crop_to(self, boundaries: tuple[int, int]) -> None:
+        neg_bound, pos_bound = boundaries
+        if neg_bound > 0 or pos_bound < 0:
+            raise ValueError('Lower bound cannot be positive and upper one cannot be negative')
+        if len(self._pos) > pos_bound:
+            del self._pos[pos_bound:]
+        if len(self._neg) > -neg_bound:
+            del self._neg[-neg_bound:]
+
 
     def __setitem__(self, index: int|slice, value: T|None) -> None:
         dim: list[int|None] = [None, None]

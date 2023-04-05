@@ -2,7 +2,7 @@
 
 from collections.abc import Iterator, Sequence
 import itertools
-from typing import Any, TypeVar
+from typing import Any, TypeVar, overload
 #>from typing import Self # from v3.11!
 
 from .abc import Array
@@ -84,6 +84,51 @@ class ArrayND(Array):
                 plane.replace_content(subarray, sub_offset[0])
             else:
                 plane.replace_content(subarray, sub_offset)
+
+    def trim(self) -> None:
+        for plane in self:
+            plane.trim()
+        while self._pos and self._pos[-1].is_empty:
+            self._pos.pop()
+        while self._neg and self._neg[-1].is_empty:
+            self._neg.pop()
+
+    @overload
+    def shrink_by(self, by: int) -> None: ...
+    @overload
+    def shrink_by(self, by: tuple[int, ...]) -> None: ...
+
+    def shrink_by(self, by) -> None:
+        if isinstance(by, int):
+            by = (by,) * self._dim
+        if not isinstance(by, tuple) or len(by) != self._dim \
+                or any(map(lambda x: not isinstance(x, int), by)):
+            raise TypeError('`by` value must be an int or a {self._dim} element tuple of integers')
+        boundaries: list[tuple[int]] = []
+        for curby, (curlow, curup) in zip(by, self.boundaries):
+            neg_bound: int = curlow + curby
+            if neg_bound > 0:
+                neg_bound = 0
+            pos_bound: int = curup - curby
+            if pos_bound < 0:
+                pos_bound = 0
+            boundaries.append((neg_bound, pos_bound))
+        self.crop_to(boundaries)
+
+    def crop_to(self, boundaries: Boundaries) -> None:
+        neg_bound, pos_bound = boundaries[0]
+        if neg_bound > 0 or pos_bound < 0:
+            raise ValueError('Lower bounds cannot be positive and upper ones cannot be negative')
+        if len(self._pos) > pos_bound:
+            del self._pos[pos_bound:]
+        if len(self._neg) > -neg_bound:
+            del self._neg[-neg_bound:]
+        if self._dim == 2:
+            for plane in self:
+                plane.crop_to(boundaries[1])
+        else:
+            for plane in self:
+                plane.crop_to(boundaries[1:])
 
     def __setitem__(self, index: tuple[int, ...], value: T) -> None:
         if not isinstance(index, tuple) or len(index) != self._dim \
