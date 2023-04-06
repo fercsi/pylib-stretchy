@@ -36,10 +36,6 @@ class Array1D(Array):
     def boundaries(self) -> tuple[int, int]:
         return -len(self._neg), len(self._pos)
 
-    @property
-    def is_empty(self) -> bool:
-        return not (self._neg or self._pos)
-
 
     def replace_content(self, content: Iterable, offset: int = 0) -> None:
         if offset >= 0:
@@ -82,6 +78,9 @@ class Array1D(Array):
         if len(self._neg) > -neg_bound:
             del self._neg[-neg_bound:]
 
+
+    def __bool__(self) -> bool:
+        return bool(self._neg) or bool(self._pos)
 
     def __setitem__(self, index: int|slice, value: T|None) -> None:
         dim: list[int|None] = [None, None]

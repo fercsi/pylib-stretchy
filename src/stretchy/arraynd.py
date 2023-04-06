@@ -60,10 +60,6 @@ class ArrayND(Array):
         boundmax: Iterator[tuple[int, int]] = (_minmax(a) for a in zip(*all_bounds))
         return ((-len(self._neg), len(self._pos)), *boundmax)
 
-    @property
-    def is_empty(self) -> bool:
-        return not (self._neg or self._pos)
-
 
     def replace_content(self, array: Sequence,
                         offset: tuple[int,...]|list[int]|int = 0) -> None:
@@ -88,9 +84,9 @@ class ArrayND(Array):
     def trim(self) -> None:
         for plane in self:
             plane.trim()
-        while self._pos and self._pos[-1].is_empty:
+        while self._pos and not self._pos[-1]:
             self._pos.pop()
-        while self._neg and self._neg[-1].is_empty:
+        while self._neg and not self._neg[-1]:
             self._neg.pop()
 
     @overload
@@ -129,6 +125,10 @@ class ArrayND(Array):
         else:
             for plane in self:
                 plane.crop_to(boundaries[1:])
+
+
+    def __bool__(self) -> bool:
+        return bool(self._neg) or bool(self._pos)
 
     def __setitem__(self, index: tuple[int, ...], value: T) -> None:
         if not isinstance(index, tuple) or len(index) != self._dim \
