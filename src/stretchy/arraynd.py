@@ -133,7 +133,7 @@ class ArrayND(Array):
     def __setitem__(self, index: tuple[int, ...], value: T) -> None:
         if not isinstance(index, tuple) or len(index) != self._dim \
                 or any(map(lambda x: not isinstance(x, int), index)):
-            raise TypeError('Index must be a {self._dim} element tuple of integers')
+            raise TypeError(f'Index must be a {self._dim} element tuple of integers')
         plane = self._getplane(index[0]) # Self|Array1D
         if self._dim == 2:
             plane[index[1]] = value
@@ -149,7 +149,7 @@ class ArrayND(Array):
             return self._getplane(index)
         if not isinstance(index, tuple) or len(index) != self._dim \
                 or any(map(lambda x: not isinstance(x, int), index)):
-            raise TypeError('Index must be a {self._dim} element tuple of integers')
+            raise TypeError(f'Index must be a {self._dim} element tuple of integers')
         plane = self._getplane(index[0], create=False)
         if plane is None:
             return self._default
