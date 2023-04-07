@@ -299,6 +299,18 @@ This is  the length of  the array in  the one-dimensional case,  and the
 number of sub-planes (alse the first element of the `shape` property) in
 the case of multi-dimensional arrays.
 
+### Check array content
+
+```python
+if not array:
+    print("Array is empty!")
+```
+
+Casting array to bool works similarly to python sequences, i.e. if array
+is empty, it is converted to `False`, otherwise to `True`. The result is
+`True` also if array contains  exclusively default values. In this case,
+after [trimming](#trim), the result of the conversion will be `False`.
+
 ### Getting values or subplanes
 
 By indexing a stretchy array, you can perform several tasks depending on
@@ -374,6 +386,63 @@ Multi-dimensional arrays:
 replace_content(self, array: Sequence,
                       offset: tuple[int,...]|list[int]|int = 0) -> None
 ```
+
+### Changing array size
+
+Thera are three methods, which can be used to resize/reshape the array:
+
+- [`trim`](#trim)
+- [`shrink_by`](#shrink_by)
+- [`crop_to`](#crop_to)
+
+These are described below.
+
+#### `trim`
+
+```python
+def trim(self) -> None
+```
+
+The method  can be  used to  cut off redundant  parts, i.e.  those where
+default values are  not followed by others. In such  a case, after trim,
+the array returns the same values at all positions as before (of course,
+other properties, such as boundary, may change).
+
+### `shrink_by`
+
+```python
+def shrink_by(self, by: int) -> None
+# dim >= 2:
+def shrink_by(self, by: tuple[tuple[int, int], ...]) -> None
+# dim = 1:
+def shrink_by(self, by: tuple[int, int]) -> None
+```
+
+The  method  can  be used  to  reduce  the  size  of the  array  in  all
+directions.  This can  lose  significant  data, but  if  there are  only
+default  values within  the specified  amount in  each directions,  only
+those values will  be deleted and the array will  not change in content.
+Of course, in all cases the the boundary's values will be reduced by the
+amount(s) of `by` (they will not exceed 0).
+
+If `by`  is of type `int`,  the array is  reduced by the same  amount in
+each direction. If  the type is a `tuple`, then  the amount of reduction
+along each axis in each direction must be given. In all cases the amount
+must be greater than or equal to zero.
+
+#### `crop_to`
+
+```python
+# dim >= 2:
+def crop_to(self, by: tuple[tuple[int, int], ...]) -> None
+# dim = 1:
+def crop_to(self, by: tuple[int, int]) -> None
+```
+
+The method can be used to cut  the array to any size in either direction
+in either dimension. Subject, of course, to the restriction that the two
+boundaries cannot  extend past the  zero point, i.e. the  lower boundary
+cannot be positive and the upper boundary cannot be negative.
 
 ### Iterating over the array
 
@@ -603,10 +672,6 @@ print(f'{array:s}')
 
 There are some ideas for future development:
 
-- **arbitrary  croping**:  Cut  to specified  size,  increase/shrink  by
-  amount (`int`) or reshape to boundaries
-- **normalization**:  Cut off  the default values  at the  boundaries to
-  prevent unnecessary storage
 - **offset  shifting**: Offset  an existing  array without  changing the
   contents. Also, offset to center.
 - **non-zero centric operation**: Do not require storage starting from 0
