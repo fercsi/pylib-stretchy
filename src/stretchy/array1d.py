@@ -60,14 +60,14 @@ class Array1D(Array):
             self._neg.pop()
 
     def shrink_by(self, by: int) -> None:
-        bound: int = len(self._neg) - curby
+        bound: int = len(self._neg) - by
         if bound < 0:
             bound = 0
         del self._neg[bound:]
-        bound = len(self._pos) - curby
+        bound = len(self._pos) - by
         if bound < 0:
             bound = 0
-        del self._posneg[bound:]
+        del self._pos[bound:]
 
     def crop_to(self, boundaries: tuple[int, int]) -> None:
         neg_bound, pos_bound = boundaries

@@ -101,6 +101,7 @@ def test_getitem_slice(indices, content, got):
 
 # Followings test also the `replace_content` method
 TEST_DATA = (
+    ((tuple(),), []),
     (((7,),), [7]),
     (((7,),2), [None, None, 7]),
     (((7,),-2), [7, None]),
@@ -132,6 +133,14 @@ def test_len(arr, content):
 
 
 @pytest.mark.parametrize('arr, content', TEST_DATA)
+def test_bool(arr, content):
+    s = Array1D()
+    s.replace_content(*arr)
+    exp = content != []
+    assert bool(s) is exp
+
+
+@pytest.mark.parametrize('arr, content', TEST_DATA)
 def test_iter(arr, content):
     s = Array1D()
     s.replace_content(*arr)
@@ -148,12 +157,80 @@ def test_iter(arr, content):
         (([1,2,3,4,5],-3), -3, '12345'),
     )
 )
-def test_set(params, offset, content):
+def test_replace_content(params, offset, content):
     s = Array1D('.')
     s.replace_content(*params)
     assert s.offset == offset
     assert f'{s:s}' == content
 
+# ======== Resizing ========
+
+@pytest.mark.parametrize('params, content',
+    (
+        (('...12345...',), '...12345'),
+        (('...12345...', -2), '.12345'),
+        (('...12345...', -3), '12345'),
+        (('...12345...', -5), '12345'),
+        (('...12345...', -8), '12345'),
+        (('...12345...', -9), '12345.'),
+        (('...12345...', 1), '....12345'),
+        (('......', -3), ''),
+        (('......', -10), ''),
+        (('......', 10), ''),
+    )
+)
+def test_trim(params, content):
+    s = Array1D('.')
+    s.replace_content(*params)
+    s.trim()
+    assert f'{s:s}' == content
+
+@pytest.mark.parametrize('params, by, content',
+    (
+        (('123456789',), 3, '123456'),
+        (('123456789',), 0, '123456789'),
+        (('123456789',), 10, ''),
+        (('123456789',-2), 3, '3456'),
+        (('123456789',-2), 0, '123456789'),
+        (('123456789',-2), 10, ''),
+        (('123456789',-9), 3, '456789'),
+        (('123456789',-12), 10, '..'),
+        (('123456789',3), 10, '..'),
+    )
+)
+def test_shrinkby(params, by, content):
+    s = Array1D('.')
+    s.replace_content(*params)
+    s.shrink_by(by)
+    assert f'{s:s}' == content
+
+@pytest.mark.parametrize('params, to, content',
+    (
+        (('123456789',), (-2,3), '123'),
+        (('123456789',), (-2,10), '123456789'),
+        (('123456789',-3), (-1,4), '34567'),
+        (('123456789',-3), (0,4), '4567'),
+        (('123456789',-3), (-3,0), '123'),
+        (('123456789',-3), (-10,10), '123456789'),
+        (('123456789',-12), (-5,5), '89...'),
+        (('123456789',3), (-5,5), '...12'),
+    )
+)
+def test_cropto(params, to, content):
+    s = Array1D('.')
+    s.replace_content(*params)
+    s.crop_to(to)
+    assert f'{s:s}' == content
+
+def test_wrong_cropto(array):
+    s = Array1D('.')
+    with pytest.raises(ValueError):
+        s.crop_to((2,5))
+    with pytest.raises(ValueError):
+        s.crop_to((-5,-2))
+
+
+# ======== Formatting ========
 
 @pytest.fixture
 def array():
