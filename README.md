@@ -317,9 +317,9 @@ By indexing a stretchy array, you can perform several tasks depending on
 the type of index.
 
 ```python
-value: Any = array[5,-7,-2]
-subplane: stretchy.Array = array[3]
-itr: Iterator = array[-10:10:2]
+value = array[5,-7,-2]
+subplane = array[3]
+subplane_iterator = array[-10:10:2]
 ```
 
 To get the  **value** of a cell,  use a `tuple` in which  the values are
@@ -383,9 +383,12 @@ replace_content(self, content: Iterable, offset: int = 0) -> None
 Multi-dimensional arrays:
 
 ```python
-replace_content(self, array: Sequence,
+replace_content(self, content: Sequence,
                       offset: tuple[int,...]|list[int]|int = 0) -> None
 ```
+
+Note, that `content` has been called  `array` in a previous version, but
+it has been deprecated by now. It will be removed in a later version.
 
 ### Changing array size
 
@@ -413,6 +416,7 @@ other properties, such as boundary, may change).
 ```python
 def shrink_by(self, by: int) -> None
 # dim >= 2:
+def shrink_by(self, by: tuple[int, ...]) -> None
 def shrink_by(self, by: tuple[tuple[int, int], ...]) -> None
 # dim = 1:
 def shrink_by(self, by: tuple[int, int]) -> None
