@@ -1,4 +1,5 @@
 import pytest
+import copy
 
 from stretchy import ArrayND
 
@@ -185,6 +186,10 @@ def test_getitem_slicend(indices, content, got):
 
 INPUT_DATA = (
     (
+        (tuple()),
+        ((0,0),(0,0)),
+        tuple()
+    ), (
         ((-1,-2),(-3,-1)),
         ((-3,0),(-2,0)),
         ('#','','#.')
@@ -244,12 +249,105 @@ def test_len(cells, boundaries, planes):
 
 
 @pytest.mark.parametrize('cells, boundaries, planes', INPUT_DATA)
+def test_bool(cells, boundaries, planes):
+    s = ArrayND(len(boundaries), '.')
+    for cell in cells:
+        s[cell] = '#'
+    exp = planes != tuple()
+    assert bool(s) is exp
+
+
+@pytest.mark.parametrize('cells, boundaries, planes', INPUT_DATA)
 def test_iter(cells, boundaries, planes):
     s = ArrayND(len(boundaries), '.')
     for cell in cells:
         s[cell] = '#'
     assert tuple(f'{sub:s}' for sub in s) == planes
 
+# ======== Resizing ========
+
+#       \/                            \/
+#   ..........  ..........  ..........  ..........  ..........  ..........
+# \ ..........  ..........  ...12345..  ..........  12345.....  ..........
+# / ..........  .....12345  ..........  ..........  ..........  ..........
+#   ..........  ..........  ..........  .......123  345.......  ..........
+#   ..........  ..........  ..........  ..........  ..........  ..........
+@pytest.fixture(scope='module')
+def trimmed():
+    s = ArrayND(3, '.')
+    empty = '.' * 10
+    empty_block = [empty] * 5
+    s.replace_content(array=[empty_block, [
+            empty, empty, '.....12345', empty, empty
+        ], [
+            empty, '...12345..', empty, empty, empty
+        ], [
+            empty, empty, empty, '.......123', empty
+        ], [
+            empty, '12345.....', empty, '345.......', empty
+        ], empty_block],
+        offset=(-3, -2, -5)
+        )
+    s.trim()
+    return s
+
+@pytest.mark.parametrize('select, content',
+    (
+        ((-2,), '12345'),
+        ((-2,0), '12345'),
+        ((-1,), '12345'),
+        ((-1,-1), '12345'),
+        ((0,), '.....\n..123'),
+        ((0,0), ''),
+        ((0,1), '..123'),
+        ((1,), '12345\n.....\n345..'),
+        ((1,0), ''),
+        ((1,1), '345..'),
+    )
+)
+def test_trim(select, content, trimmed):
+    s = copy.deepcopy(trimmed)
+    for n in select:
+        s = s[n]
+    assert f'{s:s}' == content
+
+@pytest.mark.parametrize('offset, by, content',
+    (
+        (0, 3, 'ab\nfg'),
+        (-2, 3, ''),
+        ((-2,2), 2, '..klm'),
+        ((-4,-7), 3, 'st..'),
+        (-2, (2,1), 'lmn'),
+        (-2, ((1,2),(0,1)), 'fghi\nklmn'),
+    )
+)
+def test_shrinkby(offset, by, content):
+    s = ArrayND(2, '.')
+    s.replace_content(
+        content=['abcde', 'fghij', 'klmno', 'pqrst', 'uvwxy'],
+        offset=offset
+        )
+    s.shrink_by(by)
+    assert f'{s:s}' == content
+
+@pytest.mark.parametrize('offset, to, content',
+    (
+        (0, ((-3,2),(-2,3)), 'abc\nfgh'),
+        (-2, ((0,0),(0,0)), ''),
+        (2, ((-1,1),(-1,1)), ''), # Note there is an empty "row" in there
+        ((-2,-3), ((-1,2),(-2,1)), 'ghi\nlmn\nqrs'),
+    )
+)
+def test_cropto(offset, to, content):
+    s = ArrayND(2, '.')
+    s.replace_content(
+        content=['abcde', 'fghij', 'klmno', 'pqrst', 'uvwxy'],
+        offset=offset
+        )
+    s.crop_to(to)
+    assert f'{s:s}' == content
+
+# ======== Formatting ========
 
 def test_str(array):
     expected = [

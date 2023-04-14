@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import itertools
-from typing import Any, Callable, TypeVar
+from typing import Any, Callable, TypeVar, overload
 from collections.abc import Iterable, Iterator
 
 from .abc import Array
@@ -59,12 +59,19 @@ class Array1D(Array):
         while self._neg and self._neg[-1] == self._default:
             self._neg.pop()
 
-    def shrink_by(self, by: int) -> None:
-        bound: int = len(self._neg) - by
+    @overload
+    def shrink_by(self, by: int) -> None: ...
+    @overload
+    def shrink_by(self, by: tuple[int, int]) -> None: ...
+
+    def shrink_by(self, by) -> None:
+        if isinstance(by, int):
+            by = (by, by)
+        bound: int = len(self._neg) - by[0]
         if bound < 0:
             bound = 0
         del self._neg[bound:]
-        bound = len(self._pos) - by
+        bound = len(self._pos) - by[1]
         if bound < 0:
             bound = 0
         del self._pos[bound:]

@@ -10,7 +10,8 @@ from .array1d import Array1D
 from .format import *
 
 T = TypeVar('T')
-Boundaries = tuple[tuple[int, int], ...]
+#>Boundaries = tuple[tuple[int, int], ...] | list[tuple[int, int] | list[int]]
+Boundaries = Sequence[tuple[int, int] | list[int]]
 
 def _minmax(arr: tuple[tuple[int, int], ...]) -> tuple[int, int]:
     minarr, maxarr = zip(*arr)
@@ -61,8 +62,12 @@ class ArrayND(Array):
         return ((-len(self._neg), len(self._pos)), *boundmax)
 
 
-    def replace_content(self, array: Sequence,
-                        offset: tuple[int,...]|list[int]|int = 0) -> None:
+    def replace_content(self, content: Sequence|None = None,
+                        offset: tuple[int,...]|list[int]|int = 0,
+                        *, array: Sequence|None = None) -> None:
+        if content is None:
+            content = array
+        assert content is not None
         self._neg = []
         self._pos = []
         if isinstance(offset, int):
@@ -74,12 +79,12 @@ class ArrayND(Array):
             current_offset = offset[0]
             if len(offset) > 1:
                 sub_offset = offset[1:]
-        for index, subarray in enumerate(array, current_offset):
+        for index, subcontent in enumerate(content, current_offset):
             plane = self._getplane(index) # Self|Array1D
             if self._dim == 2:
-                plane.replace_content(subarray, sub_offset[0])
+                plane.replace_content(subcontent, sub_offset[0])
             else:
-                plane.replace_content(subarray, sub_offset)
+                plane.replace_content(subcontent, sub_offset)
 
     def trim(self) -> None:
         for plane in self:
@@ -93,19 +98,23 @@ class ArrayND(Array):
     def shrink_by(self, by: int) -> None: ...
     @overload
     def shrink_by(self, by: tuple[int, ...]) -> None: ...
+    @overload
+    def shrink_by(self, by: tuple[tuple[int, int], ...]) -> None: ...
 
     def shrink_by(self, by) -> None:
         if isinstance(by, int):
-            by = (by,) * self._dim
+            by = ((by, by),) * self._dim
         if not isinstance(by, tuple) or len(by) != self._dim \
-                or any(map(lambda x: not isinstance(x, int), by)):
-            raise TypeError('`by` value must be an int or a {self._dim} element tuple of integers')
-        boundaries: list[tuple[int]] = []
+                or any(map(lambda x: not isinstance(x, (int, tuple)), by)):
+            raise TypeError(f'`by` value must be an int or a {self._dim} element tuple of integers or integer pairs')
+        if isinstance(by[0], int):
+            by = tuple((b, b) for b in by)
+        boundaries: list[tuple[int, int]] = []
         for curby, (curlow, curup) in zip(by, self.boundaries):
-            neg_bound: int = curlow + curby
+            neg_bound: int = curlow + curby[0]
             if neg_bound > 0:
                 neg_bound = 0
-            pos_bound: int = curup - curby
+            pos_bound: int = curup - curby[1]
             if pos_bound < 0:
                 pos_bound = 0
             boundaries.append((neg_bound, pos_bound))
@@ -114,7 +123,7 @@ class ArrayND(Array):
     def crop_to(self, boundaries: Boundaries) -> None:
         neg_bound, pos_bound = boundaries[0]
         if neg_bound > 0 or pos_bound < 0:
-            raise ValueError('Lower bounds cannot be positive and upper ones cannot be negative')
+            raise ValueError(f'Lower bounds cannot be positive and upper ones cannot be negative')
         if len(self._pos) > pos_bound:
             del self._pos[pos_bound:]
         if len(self._neg) > -neg_bound:
